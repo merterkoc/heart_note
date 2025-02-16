@@ -4,6 +4,7 @@ import '../../features/message/presentation/pages/home_page.dart';
 import '../../features/message/presentation/pages/note_detail_page.dart';
 import '../../features/message/presentation/pages/message_result_page.dart';
 import '../../core/entities/message_category.dart';
+import '../../features/message/presentation/pages/history_page.dart';
 
 final router = GoRouter(
   initialLocation: '/',
@@ -28,6 +29,10 @@ final router = GoRouter(
           selectedKeywords: params['keywords'] as List<String>,
         );
       },
+    ),
+    GoRoute(
+      path: '/history',
+      builder: (context, state) => const HistoryPage(),
     ),
   ],
 );

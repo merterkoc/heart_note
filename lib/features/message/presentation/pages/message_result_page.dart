@@ -11,6 +11,8 @@ import '../../../../core/services/gemini_service.dart';
 import '../../../../core/entities/message_category.dart';
 import '../bloc/note_detail_bloc.dart';
 import '../../../../core/services/gemini_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../domain/models/message_history.dart';
 
 class MessageResultPage extends StatelessWidget {
   final MessageCategory category;
@@ -41,6 +43,26 @@ class MessageResultPage extends StatelessWidget {
     await Share.shareXFiles(
       files,
       text: message,
+    );
+  }
+
+  Future<void> _saveToHistory(
+      BuildContext context, String message, String? imageUrl) async {
+    final history = MessageHistory(
+      category: category.title,
+      message: message,
+      imageUrl: imageUrl,
+      keywords: selectedKeywords,
+      createdAt: DateTime.now(),
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getStringList('message_history') ?? [];
+    historyJson.add(jsonEncode(history.toJson()));
+    await prefs.setStringList('message_history', historyJson);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Mesaj kaydedildi!')),
     );
   }
 
@@ -201,6 +223,14 @@ class MessageResultPage extends StatelessWidget {
                     },
                     tooltip: 'Mesajı Kopyala',
                     child: const Icon(Icons.copy),
+                  ),
+                  const SizedBox(width: 16),
+                  FloatingActionButton(
+                    heroTag: 'save',
+                    onPressed: () =>
+                        _saveToHistory(context, state.message, state.imageUrl),
+                    tooltip: 'Kaydet',
+                    child: const Icon(Icons.save),
                   ),
                 ],
               );
