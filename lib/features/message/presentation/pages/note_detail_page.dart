@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heart_note/core/services/gemini_service.dart';
@@ -24,18 +24,38 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.category.title),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(widget.category.title),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: selectedKeywords.isNotEmpty
+              ? () => context.push(
+                    '/result/${widget.category.title}',
+                    extra: {
+                      'category': widget.category,
+                      'keywords': selectedKeywords,
+                    },
+                  )
+              : null,
+          child: Icon(
+            CupertinoIcons.arrow_right,
+
+          ),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: CupertinoColors.systemGrey4),
+                ),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -43,57 +63,45 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                       children: [
                         Icon(
                           widget.category.icon,
-                          size: 24,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: CupertinoTheme.of(context).primaryColor,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           widget.category.title,
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: CupertinoTheme.of(context)
+                              .textTheme
+                              .navTitleTextStyle,
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(
                       widget.category.description,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: CupertinoTheme.of(context)
+                          .textTheme
+                          .tabLabelTextStyle,
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Anahtar Kelimeler',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            KeywordSelector(
-              keywords: widget.category.prompt,
-              onKeywordsSelected: (keywords) {
-                setState(() {
-                  selectedKeywords = keywords;
-                });
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                'Anahtar Kelimeler',
+                style: CupertinoTheme.of(context).textTheme.navTitleTextStyle,
+              ),
+              const SizedBox(height: 8),
+              KeywordSelector(
+                keywords: widget.category.prompt,
+                onKeywordsSelected: (keywords) {
+                  setState(() {
+                    selectedKeywords = keywords;
+                  });
+                },
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: selectedKeywords.isNotEmpty
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                context.push(
-                  '/result/${widget.category.title}',
-                  extra: {
-                    'category': widget.category,
-                    'keywords': selectedKeywords,
-                  },
-                );
-              },
-              icon: const Icon(Icons.auto_awesome),
-              label: const Text('Mesaj Oluştur'),
-            )
-          : null,
     );
   }
 }

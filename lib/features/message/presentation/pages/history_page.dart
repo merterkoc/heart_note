@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../../domain/models/message_history.dart';
@@ -29,8 +29,7 @@ class _HistoryPageState extends State<HistoryPage> {
       _history = historyJson
           .map((item) => MessageHistory.fromJson(jsonDecode(item)))
           .toList()
-        ..sort(
-            (a, b) => b.createdAt.compareTo(a.createdAt)); // En yeni en üstte
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       _isLoading = false;
     });
   }
@@ -46,53 +45,90 @@ class _HistoryPageState extends State<HistoryPage> {
     });
   }
 
+  void _showDeleteConfirmation(BuildContext context, int index) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context) => CupertinoActionSheet(
+        title: DefaultTextStyle(
+          style: CupertinoTheme.of(context).textTheme.navTitleTextStyle,
+          child: const Text('Mesajı Sil'),
+        ),
+        message: DefaultTextStyle(
+          style: CupertinoTheme.of(context).textTheme.textStyle,
+          child: const Text('Bu mesajı silmek istediğinizden emin misiniz?'),
+        ),
+        actions: [
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteHistoryItem(index);
+            },
+            child: const Text('Sil'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('İptal'),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Geçmiş'),
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Geçmiş'),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _history.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.history,
-                        size: 64,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Henüz kaydedilmiş mesaj yok',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: _history.length,
-                  itemBuilder: (context, index) {
-                    final item = _history[index];
-                    return Dismissible(
-                      key: Key(item.createdAt.toString()),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        color: Theme.of(context).colorScheme.error,
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 16),
-                        child: const Icon(Icons.delete, color: Colors.white),
-                      ),
-                      onDismissed: (_) => _deleteHistoryItem(index),
-                      child: Card(
-                        margin: const EdgeInsets.all(8),
-                        child: InkWell(
+      child: SafeArea(
+        child: _isLoading
+            ? const Center(child: CupertinoActivityIndicator())
+            : _history.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          CupertinoIcons.clock,
+                          size: 64,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                        const SizedBox(height: 16),
+                        DefaultTextStyle(
+                          style: CupertinoTheme.of(context)
+                              .textTheme
+                              .navTitleTextStyle,
+                          child: const Text('Henüz kaydedilmiş mesaj yok'),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _history.length,
+                    itemBuilder: (context, index) {
+                      final item = _history[index];
+                      return Dismissible(
+                        key: Key(item.createdAt.toString()),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          color: CupertinoColors.destructiveRed,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 16),
+                          child: const Icon(
+                            CupertinoIcons.delete,
+                            color: CupertinoColors.white,
+                          ),
+                        ),
+                        confirmDismiss: (direction) async {
+                          _showDeleteConfirmation(context, index);
+                          return false;
+                        },
+                        child: GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
+                              CupertinoPageRoute(
                                 builder: (context) => HistoryDetailPage(
                                   message: item,
                                   index: index,
@@ -100,82 +136,122 @@ class _HistoryPageState extends State<HistoryPage> {
                               ),
                             ).then((_) => _loadHistory());
                           },
-                          child: IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                if (item.imageUrl != null)
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.horizontal(
-                                        left: Radius.circular(12)),
-                                    child: SizedBox(
-                                      width: 120, // Sabit genişlik
-                                      child: Image.memory(
-                                        base64Decode(item.imageUrl!),
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return const Center(
-                                            child: Icon(
-                                              Icons.broken_image,
-                                              size: 48,
+                          child: Container(
+                            margin: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: CupertinoColors.systemGrey4),
+                            ),
+                            child: IntrinsicHeight(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (item.imageUrl != null)
+                                    ClipRRect(
+                                      borderRadius:
+                                          const BorderRadius.horizontal(
+                                              left: Radius.circular(12)),
+                                      child: SizedBox(
+                                        width: 120,
+                                        child: Image.memory(
+                                          base64Decode(item.imageUrl!),
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return const Center(
+                                              child: Icon(
+                                                CupertinoIcons
+                                                    .photo_fill_on_rectangle_fill,
+                                                size: 48,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              DefaultTextStyle(
+                                                style:
+                                                    CupertinoTheme.of(context)
+                                                        .textTheme
+                                                        .navTitleTextStyle,
+                                                child: Text(item.category),
+                                              ),
+                                              const Spacer(),
+                                              DefaultTextStyle(
+                                                style:
+                                                    CupertinoTheme.of(context)
+                                                        .textTheme
+                                                        .tabLabelTextStyle,
+                                                child: Text(_formatDate(
+                                                    item.createdAt)),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          DefaultTextStyle(
+                                            style: CupertinoTheme.of(context)
+                                                .textTheme
+                                                .textStyle,
+                                            child: Text(
+                                              item.message,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                          );
-                                        },
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Wrap(
+                                            spacing: 8,
+                                            children:
+                                                item.keywords.map((keyword) {
+                                              return Container(
+                                                margin: const EdgeInsets.only(
+                                                    bottom: 4),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: CupertinoColors
+                                                      .systemGrey6,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: DefaultTextStyle(
+                                                  style:
+                                                      CupertinoTheme.of(context)
+                                                          .textTheme
+                                                          .tabLabelTextStyle
+                                                          .copyWith(
+                                                          ),
+                                                  child: Text(keyword),
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              item.category,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .titleMedium,
-                                            ),
-                                            const Spacer(),
-                                            Text(
-                                              _formatDate(item.createdAt),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          item.message,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Wrap(
-                                          spacing: 8,
-                                          children: item.keywords
-                                              .map((keyword) => Chip(
-                                                    label: Text(keyword),
-                                                  ))
-                                              .toList(),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+      ),
     );
   }
 

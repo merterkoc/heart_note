@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,11 +36,11 @@ class MyApp extends StatelessWidget {
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, state) {
-          return MaterialApp.router(
+          return CupertinoApp.router(
             title: 'Heart Note',
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: state.themeMode,
+            theme: state.themeMode == ThemeMode.light
+                ? AppTheme.cupertinoLightTheme
+                : AppTheme.cupertinoDarkTheme,
             routerConfig: router,
           );
         },

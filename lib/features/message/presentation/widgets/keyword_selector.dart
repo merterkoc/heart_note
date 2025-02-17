@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../../../core/entities/message_keyword.dart';
 
 class KeywordSelector extends StatefulWidget {
@@ -31,19 +31,16 @@ class _KeywordSelectorState extends State<KeywordSelector> {
       spacing: 8,
       runSpacing: 8,
       children: _keywords.map((keyword) {
-        return FilterChip(
-          label: Text(keyword.text),
-          selected: keyword.isSelected,
-          onSelected: (selected) {
+        return GestureDetector(
+          onTap: () {
             setState(() {
               _keywords = _keywords.map((k) {
                 if (k.text == keyword.text) {
-                  return k.copyWith(isSelected: selected);
+                  return k.copyWith(isSelected: !k.isSelected);
                 }
                 return k;
               }).toList();
 
-              // State güncellendikten sonra seçili kelimeleri gönder
               final selectedKeywords = _keywords
                   .where((k) => k.isSelected)
                   .map((k) => k.text)
@@ -52,8 +49,49 @@ class _KeywordSelectorState extends State<KeywordSelector> {
               widget.onKeywordsSelected(selectedKeywords);
             });
           },
-          selectedColor: Theme.of(context).colorScheme.primaryContainer,
-          checkmarkColor: Theme.of(context).colorScheme.primary,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: keyword.isSelected
+                  ? CupertinoTheme.of(context).primaryColor.withOpacity(0.2)
+                  : CupertinoColors.systemGrey6,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: keyword.isSelected
+                    ? CupertinoTheme.of(context).primaryColor
+                    : CupertinoColors.systemGrey4,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DefaultTextStyle(
+                  style: keyword.isSelected
+                      ? CupertinoTheme.of(context)
+                          .textTheme
+                          .navTitleTextStyle
+                          .copyWith(
+                            color: CupertinoTheme.of(context).primaryColor,
+                          )
+                      : CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                            color: CupertinoColors.label,
+                          ),
+                  child: Text(keyword.text),
+                ),
+                if (keyword.isSelected) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    CupertinoIcons.checkmark_alt,
+                    size: 16,
+                    color: CupertinoTheme.of(context).primaryColor,
+                  ),
+                ],
+              ],
+            ),
+          ),
         );
       }).toList(),
     );

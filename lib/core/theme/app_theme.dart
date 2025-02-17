@@ -1,94 +1,127 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static TextStyle get _vt323Style => GoogleFonts.vt323();
 
-  static ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.pink,
-        brightness: Brightness.light,
-      ),
-      cardTheme: CardTheme(
-        elevation: 4,
-        shadowColor: Colors.pink.withOpacity(0.3),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+  static const Color primaryColor = CupertinoColors.systemPink;
+  static const Color backgroundColor = CupertinoColors.systemBackground;
+  static const Color secondaryBackgroundColor = CupertinoColors.systemGrey6;
+  static const Color textColor = CupertinoColors.label;
+  static const Color secondaryTextColor = CupertinoColors.secondaryLabel;
+
+  static CupertinoThemeData get cupertinoLightTheme {
+    return const CupertinoThemeData(
+      brightness: Brightness.light,
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: backgroundColor,
+      barBackgroundColor: backgroundColor,
+      textTheme: CupertinoTextThemeData(
+        primaryColor: primaryColor,
+        textStyle: TextStyle(
+          color: textColor,
+          fontSize: 16,
+          fontFamily: 'SF Pro Text',
         ),
-        color: Colors.white,
-        surfaceTintColor: Colors.transparent,
-      ),
-      appBarTheme: AppBarTheme(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        titleTextStyle: _vt323Style.copyWith(
-          fontSize: 28,
-          color: Colors.pink,
+        actionTextStyle: TextStyle(
+          color: primaryColor,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'SF Pro Text',
         ),
-      ),
-      textTheme: TextTheme(
-        titleLarge: _vt323Style.copyWith(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
+        tabLabelTextStyle: TextStyle(
+          color: secondaryTextColor,
+          fontSize: 12,
+          fontFamily: 'SF Pro Text',
         ),
-        titleMedium: _vt323Style.copyWith(
-          fontSize: 20,
+        navTitleTextStyle: TextStyle(
+          color: textColor,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'SF Pro Text',
         ),
-        bodyLarge: _vt323Style.copyWith(
-          fontSize: 18,
+        navLargeTitleTextStyle: TextStyle(
+          color: textColor,
+          fontSize: 34,
+          fontWeight: FontWeight.w700,
+          fontFamily: 'SF Pro Display',
         ),
-      ),
-      iconTheme: const IconThemeData(
-        size: 32,
-        color: Colors.pink,
+        navActionTextStyle: TextStyle(
+          color: primaryColor,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'SF Pro Text',
+        ),
+        pickerTextStyle: TextStyle(
+          color: textColor,
+          fontSize: 21,
+          fontWeight: FontWeight.w400,
+          fontFamily: 'SF Pro Display',
+        ),
+        dateTimePickerTextStyle: TextStyle(
+          color: textColor,
+          fontSize: 21,
+          fontWeight: FontWeight.w400,
+          fontFamily: 'SF Pro Display',
+        ),
       ),
     );
   }
 
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.pink,
-        brightness: Brightness.dark,
-      ),
-      cardTheme: CardTheme(
-        elevation: 4,
-        shadowColor: Colors.pinkAccent.withOpacity(0.2),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+  static CupertinoThemeData get cupertinoDarkTheme {
+    return const CupertinoThemeData(
+      brightness: Brightness.dark,
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: CupertinoColors.black,
+      barBackgroundColor: CupertinoColors.black,
+      textTheme: CupertinoTextThemeData(
+        primaryColor: primaryColor,
+        textStyle: TextStyle(
+          color: CupertinoColors.white,
+          fontSize: 16,
+          fontFamily: 'SF Pro Text',
         ),
-        color: Colors.grey[900],
-        surfaceTintColor: Colors.transparent,
-      ),
-      appBarTheme: AppBarTheme(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        titleTextStyle: _vt323Style.copyWith(
-          fontSize: 28,
-          color: Colors.pinkAccent,
+        actionTextStyle: TextStyle(
+          color: primaryColor,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'SF Pro Text',
         ),
-      ),
-      textTheme: TextTheme(
-        titleLarge: _vt323Style.copyWith(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Colors.pinkAccent,
+        tabLabelTextStyle: TextStyle(
+          color: CupertinoColors.systemGrey,
+          fontSize: 12,
+          fontFamily: 'SF Pro Text',
         ),
-        titleMedium: _vt323Style.copyWith(
-          fontSize: 20,
-          color: Colors.pinkAccent,
+        navTitleTextStyle: TextStyle(
+          color: CupertinoColors.white,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'SF Pro Text',
         ),
-        bodyLarge: _vt323Style.copyWith(
-          fontSize: 18,
-          color: Colors.white70,
+        navLargeTitleTextStyle: TextStyle(
+          color: CupertinoColors.white,
+          fontSize: 34,
+          fontWeight: FontWeight.w700,
+          fontFamily: 'SF Pro Display',
         ),
-      ),
-      iconTheme: const IconThemeData(
-        size: 32,
-        color: Colors.pinkAccent,
+        navActionTextStyle: TextStyle(
+          color: primaryColor,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'SF Pro Text',
+        ),
+        pickerTextStyle: TextStyle(
+          color: CupertinoColors.white,
+          fontSize: 21,
+          fontWeight: FontWeight.w400,
+          fontFamily: 'SF Pro Display',
+        ),
+        dateTimePickerTextStyle: TextStyle(
+          color: CupertinoColors.white,
+          fontSize: 21,
+          fontWeight: FontWeight.w400,
+          fontFamily: 'SF Pro Display',
+        ),
       ),
     );
   }

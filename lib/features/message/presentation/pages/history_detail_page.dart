@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
@@ -71,9 +71,7 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
     historyJson[widget.index] = jsonEncode(updatedMessage.toJson());
     await prefs.setStringList('message_history', historyJson);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Mesaj güncellendi!')),
-    );
+    _showAlert('Mesaj güncellendi!');
   }
 
   void _resetMessage() {
@@ -81,8 +79,21 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
       _messageController.text = _originalMessage;
       _currentMessage = _originalMessage;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Mesaj ilk haline döndürüldü')),
+    _showAlert('Mesaj ilk haline döndürüldü');
+  }
+
+  void _showAlert(String message) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context) => CupertinoActionSheet(
+        message: Text(message),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tamam'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -90,132 +101,143 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
   Widget build(BuildContext context) {
     final bool isEdited = _currentMessage != _originalMessage;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.message.category),
-        actions: [
-          if (isEdited)
-            IconButton(
-              icon: const Icon(Icons.restore),
-              onPressed: _resetMessage,
-              tooltip: 'İlk haline döndür',
-            ),
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: isEdited ? _updateMessage : null,
-            tooltip: isEdited ? 'Kaydet' : 'Değişiklik yok',
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(widget.message.category),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (widget.message.imageUrl != null) ...[
-              Card(
-                clipBehavior: Clip.antiAlias,
-                child: Image.memory(
-                  base64Decode(widget.message.imageUrl!),
-                  width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const SizedBox(
-                      height: 200,
-                      child: Center(child: Icon(Icons.broken_image, size: 48)),
-                    );
-                  },
-                ),
+            if (isEdited)
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: _resetMessage,
+                child: const Icon(CupertinoIcons.arrow_counterclockwise),
               ),
-              const SizedBox(height: 16),
-            ],
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: _messageController,
-                      maxLines: null,
-                      onChanged: (value) {
-                        setState(() {
-                          _currentMessage = value;
-                        });
-                      },
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Mesajınızı düzenleyin...',
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: isEdited ? _updateMessage : null,
+              child: Icon(
+                CupertinoIcons.check_mark,
+                color: isEdited ? null : CupertinoColors.systemGrey,
+              ),
+            ),
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.message.imageUrl != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.memory(
+                        base64Decode(widget.message.imageUrl!),
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox(
+                            height: 200,
+                            child: Center(
+                              child: Icon(
+                                CupertinoIcons.photo_fill_on_rectangle_fill,
+                                size: 48,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                    if (isEdited) ...[
-                      const Divider(),
-                      Row(
-                        children: [
-                          const Icon(Icons.edit, size: 16),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Düzenlendi',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                          ),
-                        ],
+                    const SizedBox(height: 16),
+                  ],
+                  CupertinoTextField(
+                    controller: _messageController,
+                    maxLines: null,
+                    onChanged: (value) {
+                      setState(() {
+                        _currentMessage = value;
+                      });
+                    },
+                    placeholder: 'Mesajınızı düzenleyin...',
+                    decoration: BoxDecoration(
+                      color: CupertinoColors.systemBackground,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: CupertinoColors.systemGrey4,
                       ),
-                    ],
+                    ),
+                    padding: const EdgeInsets.all(12),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Anahtar Kelimeler',
+                    style:
+                        CupertinoTheme.of(context).textTheme.navTitleTextStyle,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: widget.message.keywords.map((keyword) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: CupertinoColors.systemGrey5,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(keyword),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Oluşturulma Tarihi',
+                    style:
+                        CupertinoTheme.of(context).textTheme.navTitleTextStyle,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(_formatDate(widget.message.createdAt)),
+                  const SizedBox(height: 80), // Alt menü için boşluk
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    CupertinoButton(
+                      onPressed: () => _shareContent(
+                        _currentMessage,
+                        widget.message.imageUrl,
+                      ),
+                      child: const Icon(CupertinoIcons.share),
+                    ),
+                    CupertinoButton(
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: _currentMessage));
+                        _showAlert('Mesaj kopyalandı!');
+                      },
+                      child: const Icon(CupertinoIcons.doc_on_doc),
+                    ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Anahtar Kelimeler',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: widget.message.keywords
-                  .map((keyword) => Chip(label: Text(keyword)))
-                  .toList(),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Oluşturulma Tarihi',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(_formatDate(widget.message.createdAt)),
-          ],
-        ),
-      ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: 'share',
-            onPressed: () => _shareContent(
-              _currentMessage,
-              widget.message.imageUrl,
-            ),
-            tooltip: 'Paylaş',
-            child: const Icon(Icons.share),
-          ),
-          const SizedBox(width: 16),
-          FloatingActionButton(
-            heroTag: 'copy',
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: _currentMessage));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Mesaj kopyalandı!')),
-              );
-            },
-            tooltip: 'Kopyala',
-            child: const Icon(Icons.copy),
           ),
         ],
       ),
