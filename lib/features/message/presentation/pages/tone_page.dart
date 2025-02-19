@@ -23,11 +23,33 @@ class TonePage extends StatefulWidget {
 class _TonePageState extends State<TonePage> {
   String? _tone;
 
+  final List<String> _toneOptions = [
+    'Sen',
+    'Siz',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Hitap'),
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Hitap'),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: _tone == null
+              ? null
+              : () {
+                  context.push(
+                    AppRoute.messageResult.path,
+                    extra: {
+                      'selectedKeywords': widget.selectedKeywords,
+                      'category': widget.category,
+                      'recipient': widget.recipient,
+                      'tone': _tone,
+                    },
+                  );
+                },
+          child: const Icon(CupertinoIcons.arrow_right),
+        ),
       ),
       child: SafeArea(
         child: Padding(
@@ -40,35 +62,39 @@ class _TonePageState extends State<TonePage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              CupertinoSlidingSegmentedControl<String>(
-                groupValue: _tone,
-                children: const {
-                  'Sen': Text('Sen'),
-                  'Siz': Text('Siz'),
-                },
-                onValueChanged: (String? value) {
-                  setState(() {
-                    _tone = value;
-                  });
-                },
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _toneOptions.length,
+                  itemBuilder: (context, index) {
+                    final tone = _toneOptions[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: CupertinoButton(
+                        color: _tone == tone
+                            ? CupertinoColors.destructiveRed
+                            : CupertinoColors.lightBackgroundGray,
+                        padding: const EdgeInsets.all(16),
+                        borderRadius: BorderRadius.circular(12),
+                        onPressed: () {
+                          setState(() {
+                            _tone = tone;
+                          });
+                        },
+                        child: Text(
+                          tone,
+                          style: TextStyle(
+                            color: _tone == tone
+                                ? CupertinoColors.white
+                                : CupertinoColors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
               const SizedBox(height: 24),
-              CupertinoButton.filled(
-                onPressed: _tone == null
-                    ? null
-                    : () {
-                        context.push(
-                          AppRoute.messageResult.path,
-                          extra: {
-                            'selectedKeywords': widget.selectedKeywords,
-                            'category': widget.category,
-                            'recipient': widget.recipient,
-                            'tone': _tone,
-                          },
-                        );
-                      },
-                child: const Text('Mesajı Oluştur'),
-              ),
             ],
           ),
         ),

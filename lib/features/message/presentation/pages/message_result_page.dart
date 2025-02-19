@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heart_note/features/message/presentation/bloc/history_event.dart';
+import 'package:heart_note/features/message/presentation/widgets/keyword_selector.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -61,85 +62,173 @@ class MessageResultPage extends StatelessWidget {
         navigationBar: const CupertinoNavigationBar(
           middle: Text('Oluşturulan Mesaj'),
         ),
-        child: BlocBuilder<NoteDetailBloc, NoteDetailState>(
-          builder: (context, state) {
-            if (state is NoteDetailLoading) {
-              return const Center(
-                child: CupertinoActivityIndicator(),
-              );
-            }
-            if (state is NoteDetailLoaded) {
-              return MessageResultPageContent(
-                message: state.message,
-                imageUrl: state.imageUrl,
-                category: category,
-                selectedKeywords: selectedKeywords,
-              );
-            }
-            if (state is NoteDetailError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      CupertinoIcons.exclamationmark_circle,
-                      size: 48,
-                      color: CupertinoColors.destructiveRed,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: BlocBuilder<NoteDetailBloc, NoteDetailState>(
+              builder: (context, state) {
+                if (state is NoteDetailLoading) {
+                  return const Center(
+                    child: CupertinoActivityIndicator(),
+                  );
+                }
+                if (state is NoteDetailError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          CupertinoIcons.exclamationmark_circle,
+                          size: 48,
+                          color: CupertinoColors.destructiveRed,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          state.message,
+                          style: const TextStyle(
+                            color: CupertinoColors.destructiveRed,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      state.message,
-                      style: const TextStyle(
-                        color: CupertinoColors.destructiveRed,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-            return const SizedBox();
-          },
+                  );
+                }
+                if (state is NoteDetailLoaded) {
+                  return _buildContent(context, state);
+                }
+                return const SizedBox();
+              },
+            ),
+          ),
         ),
       ),
     );
   }
-}
 
-class MessageResultPageContent extends StatefulWidget {
-  final String message;
-  final String? imageUrl;
-  final MessageCategory category;
-  final List<String> selectedKeywords;
+  Widget _buildContent(BuildContext context, NoteDetailLoaded state) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (state.imageUrl != null)
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: MemoryImage(
+                        base64Decode(state.imageUrl!),
+                      ),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              Text(
+                state.message,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8.0,
+                children: selectedKeywords.map((keyword) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: CupertinoColors.systemGrey6,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: CupertinoColors.systemGrey4,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DefaultTextStyle(
+                          style: CupertinoTheme.of(context)
+                              .textTheme
+                              .textStyle
+                              .copyWith(
+                                color: CupertinoColors.label,
+                              ),
+                          child: Text(keyword),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    CupertinoButton(
+                      onPressed: () {
+                        _shareContent(
+                          state.message,
+                          state.imageUrl,
+                        );
+                      },
+                      child: const Icon(CupertinoIcons.share),
+                    ),
+                    CupertinoButton(
+                      onPressed: () {
+                        Clipboard.setData(
+                          ClipboardData(text: state.message),
+                        );
+                        _showAlert(context, 'Mesaj kopyalandı!');
+                      },
+                      child: const Icon(CupertinoIcons.doc_on_doc),
+                    ),
+                    CupertinoButton(
+                      onPressed: () => _saveToHistory(
+                        context,
+                        state.message,
+                        state.imageUrl,
+                        selectedKeywords,
+                        category,
+                      ),
+                      child: const Icon(CupertinoIcons.floppy_disk),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  const MessageResultPageContent({
-    super.key,
-    required this.message,
-    required this.imageUrl,
-    required this.category,
-    required this.selectedKeywords,
-  });
+  void _shareContent(String message, String? imageUrl) async {
+    if (imageUrl != null) {
+      final directory = await getApplicationDocumentsDirectory();
+      final imagePath = File('${directory.path}/shared_image.png');
+      final imageBytes = base64Decode(imageUrl);
+      await imagePath.writeAsBytes(imageBytes);
 
-  @override
-  State<MessageResultPageContent> createState() =>
-      _MessageResultPageContentState();
-}
-
-class _MessageResultPageContentState extends State<MessageResultPageContent> {
-  Future<void> _shareContent(String message, String? imageBase64) async {
-    List<XFile> files = [];
-    if (imageBase64 != null) {
-      try {
-        final bytes = base64Decode(imageBase64);
-        final tempDir = await getTemporaryDirectory();
-        final imagePath = '${tempDir.path}/shared_image.png';
-        final imageFile = File(imagePath);
-        await imageFile.writeAsBytes(bytes);
-        files.add(XFile(imagePath));
-      } catch (e) {
-        print('Görsel paylaşma hatası: $e');
-      }
+      await Share.shareXFiles(
+        [XFile(imagePath.path)],
+        text: message,
+      );
+    } else {
+      Share.share(message);
     }
-    await Share.shareXFiles(files, text: message);
   }
 
   Future<void> _saveToHistory(
@@ -174,123 +263,8 @@ class _MessageResultPageContentState extends State<MessageResultPageContent> {
     historyJson.add(jsonEncode(history.toJson()));
     await prefs.setStringList('message_history', historyJson);
 
-    _showAlert(context, 'Mesaj kaydedildi!');
+    // ignore: use_build_context_synchronously
     BlocProvider.of<HistoryBloc>(context).add(LoadHistory());
-  }
-
-  Future<bool> _getAutoSavePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('autoSave') ?? false;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAutoSaveAndSave();
-  }
-
-  Future<void> _checkAutoSaveAndSave() async {
-    final autoSave = await _getAutoSavePreference();
-    if (autoSave) {
-      _saveToHistory(
-        context,
-        widget.message,
-        widget.imageUrl,
-        widget.selectedKeywords,
-        widget.category,
-      );
-    }
-  }
-
-  void _showAlert(BuildContext context, String message) {
-    showCupertinoModalPopup<void>(
-      context: context,
-      builder: (BuildContext context) => CupertinoActionSheet(
-        message: Text(message),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tamam'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (widget.imageUrl != null)
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    image: DecorationImage(
-                      image: MemoryImage(
-                        base64Decode(widget.imageUrl!),
-                      ),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 16),
-              Text(
-                widget.message,
-                style: const TextStyle(fontSize: 16),
-              ),
-            ],
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              child: SafeArea(
-                top: false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    CupertinoButton(
-                      onPressed: () {
-                        _shareContent(
-                          widget.message,
-                          widget.imageUrl,
-                        );
-                      },
-                      child: const Icon(CupertinoIcons.share),
-                    ),
-                    CupertinoButton(
-                      onPressed: () {
-                        Clipboard.setData(
-                          ClipboardData(text: widget.message),
-                        );
-                        _showAlert(context, 'Mesaj kopyalandı!');
-                      },
-                      child: const Icon(CupertinoIcons.doc_on_doc),
-                    ),
-                    CupertinoButton(
-                      onPressed: () => _saveToHistory(
-                        context,
-                        widget.message,
-                        widget.imageUrl,
-                        widget.selectedKeywords,
-                        widget.category,
-                      ),
-                      child: const Icon(CupertinoIcons.floppy_disk),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    _showAlert(context, 'Mesaj başarıyla kaydedildi!');
   }
 }

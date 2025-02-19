@@ -21,11 +21,37 @@ class RecipientPage extends StatefulWidget {
 class _RecipientPageState extends State<RecipientPage> {
   String? _recipient;
 
+  final List<String> _recipientOptions = [
+    'Sevgili',
+    'En İyi Arkadaş',
+    'Dost',
+    'Kardeş',
+    'Aile',
+    'Diğer',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Kime?'),
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Kime?'),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: _recipient == null
+              ? null
+              : () {
+            context.push(
+              AppRoute.tone.path,
+              extra: {
+                'selectedKeywords': widget.selectedKeywords,
+                'category': widget.category,
+                'recipient': _recipient,
+              },
+            );
+          },
+          alignment: Alignment.center,
+          child: const Icon(CupertinoIcons.arrow_right),
+        ),
       ),
       child: SafeArea(
         child: Padding(
@@ -38,38 +64,39 @@ class _RecipientPageState extends State<RecipientPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              CupertinoSlidingSegmentedControl<String>(
-                groupValue: _recipient,
-                children: const {
-                  'Sevgili': Text('Sevgili'),
-                  'En İyi Arkadaş': Text('En İyi Arkadaş'),
-                  'Dost': Text('Dost'),
-                  'Kardeş': Text('Kardeş'),
-                  'Aile': Text('Aile'),
-                  'Diğer': Text('Diğer'),
-                },
-                onValueChanged: (String? value) {
-                  setState(() {
-                    _recipient = value;
-                  });
-                },
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _recipientOptions.length,
+                  itemBuilder: (context, index) {
+                    final recipient = _recipientOptions[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: CupertinoButton(
+                        color: _recipient == recipient
+                            ? CupertinoColors.destructiveRed
+                            : CupertinoColors.lightBackgroundGray,
+                        padding: const EdgeInsets.all(16),
+                        borderRadius: BorderRadius.circular(12),
+                        onPressed: () {
+                          setState(() {
+                            _recipient = recipient;
+                          });
+                        },
+                        child: Text(
+                          recipient,
+                          style: TextStyle(
+                            color: _recipient == recipient
+                                ? CupertinoColors.white
+                                : CupertinoColors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
               const SizedBox(height: 24),
-              CupertinoButton.filled(
-                onPressed: _recipient == null
-                    ? null
-                    : () {
-                        context.push(
-                          AppRoute.tone.path,
-                          extra: {
-                            'selectedKeywords': widget.selectedKeywords,
-                            'category': widget.category,
-                            'recipient': _recipient,
-                          },
-                        );
-                      },
-                child: const Text('Devam'),
-              ),
             ],
           ),
         ),
