@@ -5,6 +5,7 @@ import 'package:heart_note/core/bloc/theme_event.dart';
 import 'package:heart_note/core/bloc/theme_state.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/bloc/theme_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -14,9 +15,27 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  bool _autoSave = false;
+
   @override
   void initState() {
     super.initState();
+    _loadAutoSavePreference();
+  }
+
+  Future<void> _loadAutoSavePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _autoSave = prefs.getBool('autoSave') ?? false;
+    });
+  }
+
+  Future<void> _setAutoSavePreference(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('autoSave', value);
+    setState(() {
+      _autoSave = value;
+    });
   }
 
   Future<PackageInfo> _initPackageInfo() async {
@@ -60,6 +79,23 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     );
                   },
+                ),
+              ],
+            ),
+            CupertinoListSection.insetGrouped(
+              backgroundColor: CupertinoColors.transparent,
+              header: const Text('Otomatik Kaydetme'),
+              children: [
+                CupertinoListTile(
+                  title: const Text('Mesajları otomatik kaydet'),
+                  trailing: CupertinoSwitch(
+                    value: _autoSave,
+                    onChanged: (bool? value) {
+                      if (value != null) {
+                        _setAutoSavePreference(value);
+                      }
+                    },
+                  ),
                 ),
               ],
             ),

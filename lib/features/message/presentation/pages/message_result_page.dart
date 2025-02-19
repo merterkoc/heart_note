@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:heart_note/features/message/presentation/bloc/history_event.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -12,6 +13,7 @@ import '../bloc/note_detail_state.dart';
 import '../../../../core/services/gemini_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/message_history.dart';
+import '../bloc/history_bloc.dart';
 
 class MessageResultPage extends StatelessWidget {
   final MessageCategory category;
@@ -22,41 +24,6 @@ class MessageResultPage extends StatelessWidget {
     required this.category,
     required this.selectedKeywords,
   });
-
-  Future<void> _shareContent(String message, String? imageBase64) async {
-    List<XFile> files = [];
-    if (imageBase64 != null) {
-      try {
-        final bytes = base64Decode(imageBase64);
-        final tempDir = await getTemporaryDirectory();
-        final imagePath = '${tempDir.path}/shared_image.png';
-        final imageFile = File(imagePath);
-        await imageFile.writeAsBytes(bytes);
-        files.add(XFile(imagePath));
-      } catch (e) {
-        print('Görsel paylaşma hatası: $e');
-      }
-    }
-    await Share.shareXFiles(files, text: message);
-  }
-
-  Future<void> _saveToHistory(
-      BuildContext context, String message, String? imageUrl) async {
-    final history = MessageHistory(
-      category: category.title,
-      message: message,
-      imageUrl: imageUrl,
-      keywords: selectedKeywords,
-      createdAt: DateTime.now(),
-    );
-
-    final prefs = await SharedPreferences.getInstance();
-    final historyJson = prefs.getStringList('message_history') ?? [];
-    historyJson.add(jsonEncode(history.toJson()));
-    await prefs.setStringList('message_history', historyJson);
-
-    _showAlert(context, 'Mesaj kaydedildi!');
-  }
 
   void _showAlert(BuildContext context, String message) {
     showCupertinoModalPopup<void>(
@@ -148,7 +115,8 @@ class MessageResultPageContent extends StatefulWidget {
   });
 
   @override
-  State<MessageResultPageContent> createState() => _MessageResultPageContentState();
+  State<MessageResultPageContent> createState() =>
+      _MessageResultPageContentState();
 }
 
 class _MessageResultPageContentState extends State<MessageResultPageContent> {
@@ -170,7 +138,11 @@ class _MessageResultPageContentState extends State<MessageResultPageContent> {
   }
 
   Future<void> _saveToHistory(
-      BuildContext context, String message, String? imageUrl, List<String> selectedKeywords, MessageCategory category) async {
+      BuildContext context,
+      String message,
+      String? imageUrl,
+      List<String> selectedKeywords,
+      MessageCategory category) async {
     final history = MessageHistory(
       category: category.title,
       message: message,
@@ -181,10 +153,48 @@ class _MessageResultPageContentState extends State<MessageResultPageContent> {
 
     final prefs = await SharedPreferences.getInstance();
     final historyJson = prefs.getStringList('message_history') ?? [];
+
+    // Check if the message already exists
+    final existingMessageIndex = historyJson.indexWhere((element) {
+      final existingHistory = MessageHistory.fromJson(jsonDecode(element));
+      return existingHistory.message == message &&
+          existingHistory.category == category.title;
+    });
+
+    if (existingMessageIndex != -1) {
+      _showAlert(context, 'Bu mesaj zaten kaydedilmiş!');
+      return;
+    }
+
     historyJson.add(jsonEncode(history.toJson()));
     await prefs.setStringList('message_history', historyJson);
 
     _showAlert(context, 'Mesaj kaydedildi!');
+    BlocProvider.of<HistoryBloc>(context).add(LoadHistory());
+  }
+
+  Future<bool> _getAutoSavePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('autoSave') ?? false;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAutoSaveAndSave();
+  }
+
+  Future<void> _checkAutoSaveAndSave() async {
+    final autoSave = await _getAutoSavePreference();
+    if (autoSave) {
+      _saveToHistory(
+        context,
+        widget.message,
+        widget.imageUrl,
+        widget.selectedKeywords,
+        widget.category,
+      );
+    }
   }
 
   void _showAlert(BuildContext context, String message) {
@@ -201,32 +211,36 @@ class _MessageResultPageContentState extends State<MessageResultPageContent> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          if (widget.imageUrl != null)
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(
-                  image: MemoryImage(
-                    base64Decode(widget.imageUrl!),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.imageUrl != null)
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: MemoryImage(
+                        base64Decode(widget.imageUrl!),
+                      ),
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  fit: BoxFit.cover,
                 ),
+              const SizedBox(height: 16),
+              Text(
+                widget.message,
+                style: const TextStyle(fontSize: 16),
               ),
-            ),
-          const SizedBox(height: 16),
-          Text(
-            widget.message,
-            style: const TextStyle(fontSize: 16),
+            ],
           ),
-          const SizedBox(height: 16),
           Positioned(
             left: 0,
             right: 0,
@@ -240,9 +254,9 @@ class _MessageResultPageContentState extends State<MessageResultPageContent> {
                     CupertinoButton(
                       onPressed: () {
                         _shareContent(
-                        widget.message,
-                        widget.imageUrl,
-                      );
+                          widget.message,
+                          widget.imageUrl,
+                        );
                       },
                       child: const Icon(CupertinoIcons.share),
                     ),
