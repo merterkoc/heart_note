@@ -6,6 +6,7 @@ import '../../../../core/entities/message_category.dart';
 import '../bloc/note_detail_bloc.dart';
 import '../widgets/keyword_selector.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/router/router.dart';
 
 class NoteDetailPage extends StatefulWidget {
   final MessageCategory category;
@@ -31,7 +32,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
           padding: EdgeInsets.zero,
           onPressed: selectedKeywords.isNotEmpty
               ? () => context.push(
-                    '/result/${widget.category.title}',
+                    AppRoute.recipient.path,
                     extra: {
                       'category': widget.category,
                       'keywords': selectedKeywords,

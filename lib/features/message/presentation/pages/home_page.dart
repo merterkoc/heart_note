@@ -6,31 +6,31 @@ import '../bloc/message_bloc.dart';
 import '../../../../core/bloc/theme_bloc.dart';
 import '../widgets/category_list.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/entities/message_category.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: const Text('Heart Note'),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-
+        trailing: GestureDetector(
+          onTap: () => context.push('/settings'),
+          child: const Icon(CupertinoIcons.settings),
         ),
       ),
       child: SafeArea(
-        bottom: false,
         child: BlocBuilder<MessageBloc, MessageState>(
           builder: (context, state) {
             if (state is MessageLoading) {
-              return const Center(
-                child: CupertinoActivityIndicator(),
-              );
+              return const Center(child: CupertinoActivityIndicator());
             }
             if (state is MessageLoaded) {
-              return CategoryList(categories: state.categories);
+              return CategoryList(
+                categories: state.categories,
+              );
             }
             if (state is MessageError) {
               return Center(

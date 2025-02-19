@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:heart_note/core/entities/message_keyword.dart';
 import 'package:heart_note/core/router/nav_bar.dart';
 import '../../features/message/presentation/pages/home_page.dart';
 import '../../features/message/presentation/pages/note_detail_page.dart';
@@ -8,6 +9,27 @@ import '../../features/message/presentation/pages/message_result_page.dart';
 import '../../core/entities/message_category.dart';
 import '../../features/message/presentation/pages/history_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import 'package:flutter/cupertino.dart';
+import '../../features/message/presentation/pages/category_detail_page.dart';
+import '../../features/message/presentation/pages/recipient_page.dart';
+import '../../features/message/presentation/pages/tone_page.dart';
+
+// Define route names as enums
+enum AppRoute {
+  home('/', 'home'),
+  message_result('result/:category', 'message_result'),
+  note_detail('note/:category', 'note_detail'),
+  history('/history', 'history'),
+  settings('/settings', 'settings'),
+  categoryDetail('/categoryDetail', 'categoryDetail'),
+  recipient('/recipient', 'recipient'),
+  tone('/tone', 'tone'),
+  messageResult('/messageResult', 'messageResult');
+
+  const AppRoute(this.path, this.name);
+  final String path;
+  final String name;
+}
 
 // Custom observer for logging navigation events
 class GoRouterObserver extends NavigatorObserver {
@@ -58,24 +80,26 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: <RouteBase>[
             GoRoute(
-              path: '/',
-              name: 'home', // Named routes for better logging
+              path: AppRoute.home.path,
+              name: AppRoute.home.name, // Use enum name
               builder: (context, state) => const HomePage(),
               routes: <RouteBase>[
                 GoRoute(
-                  path: 'result/:category',
-                  name: 'message_result',
+                  path: AppRoute.message_result.path,
+                  name: AppRoute.message_result.name, // Use enum name
                   builder: (context, state) {
                     final params = state.extra as Map<String, dynamic>;
                     return MessageResultPage(
+                      tone: params['tone'] as String,
+                      recipient: params['recipient'] as String,
                       category: params['category'] as MessageCategory,
                       selectedKeywords: params['keywords'] as List<String>,
                     );
                   },
                 ),
                 GoRoute(
-                  path: 'note/:category',
-                  name: 'note_detail',
+                  path: AppRoute.note_detail.path,
+                  name: AppRoute.note_detail.name, // Use enum name
                   builder: (context, state) {
                     final category = state.extra as MessageCategory;
                     return NoteDetailPage(category: category);
@@ -88,8 +112,8 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: <RouteBase>[
             GoRoute(
-              path: '/history',
-              name: 'history',
+              path: AppRoute.history.path,
+              name: AppRoute.history.name, // Use enum name
               builder: (context, state) => const HistoryPage(),
             ),
           ],
@@ -97,13 +121,67 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: <RouteBase>[
             GoRoute(
-              path: '/settings',
-              name: 'settings',
+              path: AppRoute.settings.path,
+              name: AppRoute.settings.name, // Use enum name
               builder: (context, state) => const SettingsPage(),
             ),
           ],
         ),
       ],
+    ),
+    GoRoute(
+      path: AppRoute.categoryDetail.path,
+      name: AppRoute.categoryDetail.name, // Use enum name
+      builder: (context, state) {
+        final category = state.extra as MessageCategory;
+        return CategoryDetailPage(category: category);
+      },
+    ),
+    GoRoute(
+      path: AppRoute.recipient.path,
+      name: AppRoute.recipient.name, // Use enum name
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        final selectedKeywords = extra['keywords'] as List<String>;
+        final category = extra['category'] as MessageCategory;
+        return RecipientPage(
+          selectedKeywords: selectedKeywords,
+          category: category,
+        );
+      },
+    ),
+    GoRoute(
+      path: AppRoute.tone.path,
+      name: AppRoute.tone.name, // Use enum name
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        final selectedKeywords = extra['selectedKeywords'] as List<String>;
+        final category = extra['category'] as MessageCategory;
+        final recipient = extra['recipient'] as String;
+        return TonePage(
+          selectedKeywords: selectedKeywords,
+          category: category,
+          recipient: recipient,
+        );
+      },
+    ),
+    GoRoute(
+      path: AppRoute.messageResult.path,
+      name: AppRoute.messageResult.name, // Use enum name
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        final selectedKeywords = extra['selectedKeywords'] as List<String>;
+        final category = extra['category'] as MessageCategory;
+        final recipient = extra['recipient'] as String;
+        final tone = extra['tone'] as String;
+
+        return MessageResultPage(
+          category: category,
+          selectedKeywords: selectedKeywords,
+          recipient: recipient,
+          tone: tone,
+        );
+      },
     ),
   ],
 );

@@ -18,11 +18,15 @@ import '../bloc/history_bloc.dart';
 class MessageResultPage extends StatelessWidget {
   final MessageCategory category;
   final List<String> selectedKeywords;
+  final String recipient;
+  final String tone;
 
   const MessageResultPage({
     super.key,
     required this.category,
     required this.selectedKeywords,
+    required this.recipient,
+    required this.tone,
   });
 
   void _showAlert(BuildContext context, String message) {
@@ -49,7 +53,8 @@ class MessageResultPage extends StatelessWidget {
           GenerateMessage(
             category: category.title,
             imagePrompt: category.imagePrompt,
-            prompt: 'Anahtar kelimeler: ${selectedKeywords.join(", ")}',
+            prompt:
+                'Kime: $recipient, Hitap: $tone, Anahtar kelimeler: ${selectedKeywords.join(", ")}',
           ),
         ),
       child: CupertinoPageScaffold(
@@ -143,14 +148,6 @@ class _MessageResultPageContentState extends State<MessageResultPageContent> {
       String? imageUrl,
       List<String> selectedKeywords,
       MessageCategory category) async {
-    final history = MessageHistory(
-      category: category.title,
-      message: message,
-      imageUrl: imageUrl,
-      keywords: selectedKeywords,
-      createdAt: DateTime.now(),
-    );
-
     final prefs = await SharedPreferences.getInstance();
     final historyJson = prefs.getStringList('message_history') ?? [];
 
@@ -165,6 +162,14 @@ class _MessageResultPageContentState extends State<MessageResultPageContent> {
       _showAlert(context, 'Bu mesaj zaten kaydedilmiş!');
       return;
     }
+
+    final history = MessageHistory(
+      category: category.title,
+      message: message,
+      imageUrl: imageUrl,
+      keywords: selectedKeywords,
+      createdAt: DateTime.now(),
+    );
 
     historyJson.add(jsonEncode(history.toJson()));
     await prefs.setStringList('message_history', historyJson);
