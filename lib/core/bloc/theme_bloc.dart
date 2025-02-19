@@ -1,27 +1,8 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// Events
-abstract class ThemeEvent extends Equatable {
-  @override
-  List<Object> get props => [];
-}
-
-class ToggleTheme extends ThemeEvent {}
-
-class LoadTheme extends ThemeEvent {}
-
-// States
-class ThemeState extends Equatable {
-  final ThemeMode themeMode;
-
-  const ThemeState(this.themeMode);
-
-  @override
-  List<Object> get props => [themeMode];
-}
+import 'theme_event.dart';
+import 'theme_state.dart';
 
 // Bloc
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
@@ -36,10 +17,8 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
     ToggleTheme event,
     Emitter<ThemeState> emit,
   ) async {
-    final newMode =
-        state.themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    await prefs.setString('themeMode', newMode.toString());
-    emit(ThemeState(newMode));
+    await prefs.setString('themeMode', event.themeMode.toString());
+    emit(ThemeState(event.themeMode));
   }
 
   Future<void> _onLoadTheme(

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:heart_note/features/message/presentation/bloc/message_event.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'features/message/data/message_repository.dart';
 import 'features/message/presentation/bloc/message_bloc.dart';
@@ -8,6 +9,8 @@ import 'core/router/router.dart';
 import 'core/services/gemini_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/bloc/theme_bloc.dart';
+import 'core/bloc/theme_event.dart';
+import 'core/bloc/theme_state.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

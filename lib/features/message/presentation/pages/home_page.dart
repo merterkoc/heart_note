@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:heart_note/features/message/presentation/bloc/message_state.dart';
 import '../bloc/message_bloc.dart';
 import '../../../../core/bloc/theme_bloc.dart';
 import '../widgets/category_list.dart';
@@ -16,28 +17,7 @@ class HomePage extends StatelessWidget {
         middle: const Text('Heart Note'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            BlocBuilder<ThemeBloc, ThemeState>(
-              builder: (context, state) {
-                return CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () {
-                    context.read<ThemeBloc>().add(ToggleTheme());
-                  },
-                  child: Icon(
-                    state.themeMode == ThemeMode.light
-                        ? CupertinoIcons.moon
-                        : CupertinoIcons.sun_max,
-                  ),
-                );
-              },
-            ),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => context.push('/history'),
-              child: const Icon(CupertinoIcons.clock),
-            ),
-          ],
+
         ),
       ),
       child: SafeArea(

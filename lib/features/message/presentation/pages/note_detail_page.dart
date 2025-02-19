@@ -40,7 +40,6 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               : null,
           child: Icon(
             CupertinoIcons.arrow_right,
-
           ),
         ),
       ),

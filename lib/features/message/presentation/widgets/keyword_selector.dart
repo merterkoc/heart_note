@@ -4,11 +4,13 @@ import '../../../../core/entities/message_keyword.dart';
 class KeywordSelector extends StatefulWidget {
   final List<MessageKeyword> keywords;
   final Function(List<String>) onKeywordsSelected;
+  final bool isDisabled;
 
   const KeywordSelector({
     super.key,
     required this.keywords,
     required this.onKeywordsSelected,
+    this.isDisabled = false,
   });
 
   @override
@@ -32,7 +34,7 @@ class _KeywordSelectorState extends State<KeywordSelector> {
       runSpacing: 8,
       children: _keywords.map((keyword) {
         return GestureDetector(
-          onTap: () {
+          onTap: widget.isDisabled ? null : () {
             setState(() {
               _keywords = _keywords.map((k) {
                 if (k.text == keyword.text) {

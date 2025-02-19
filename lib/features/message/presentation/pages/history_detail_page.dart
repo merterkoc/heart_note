@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:heart_note/core/entities/message_keyword.dart';
+import 'package:heart_note/features/message/presentation/widgets/keyword_selector.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -180,22 +183,13 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
                         CupertinoTheme.of(context).textTheme.navTitleTextStyle,
                   ),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: widget.message.keywords.map((keyword) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: CupertinoColors.systemGrey5,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(keyword),
-                      );
-                    }).toList(),
+                  KeywordSelector(
+                    isDisabled: true,
+                    keywords: List<MessageKeyword>.generate(
+                        widget.message.keywords.length,
+                        (index) => const MessageKeyword(
+                            isSelected: false, text: 'Test')),
+                    onKeywordsSelected: (keywords) {},
                   ),
                   const SizedBox(height: 16),
                   Text(
