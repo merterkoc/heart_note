@@ -13,6 +13,8 @@ import 'package:flutter/cupertino.dart';
 import '../../features/message/presentation/pages/category_detail_page.dart';
 import '../../features/message/presentation/pages/recipient_page.dart';
 import '../../features/message/presentation/pages/tone_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 
 // Define route names as enums
 enum AppRoute {
@@ -24,9 +26,11 @@ enum AppRoute {
   categoryDetail('/categoryDetail', 'categoryDetail'),
   recipient('/recipient', 'recipient'),
   tone('/tone', 'tone'),
-  messageResult('/messageResult', 'messageResult');
+  messageResult('/messageResult', 'messageResult'),
+  onboarding('/onboarding', 'onboarding');
 
   const AppRoute(this.path, this.name);
+
   final String path;
   final String name;
 }
@@ -68,9 +72,25 @@ class GoRouterObserver extends NavigatorObserver {
 
 final router = GoRouter(
   initialLocation: '/',
-  debugLogDiagnostics: true, // Built-in logging
-  observers: [GoRouterObserver()], // Custom detailed logging
+  debugLogDiagnostics: true,
+  // Built-in logging
+  observers: [GoRouterObserver()],
+  // Custom detailed logging
+  redirect: (context, state) async {
+    final prefs = await SharedPreferences.getInstance();
+    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+
+    if (!onboardingCompleted && state.location != AppRoute.onboarding.path) {
+      return AppRoute.onboarding.path;
+    }
+    return null;
+  },
   routes: [
+    GoRoute(
+      path: AppRoute.onboarding.path,
+      name: AppRoute.onboarding.name,
+      builder: (context, state) => const OnboardingPage(),
+    ),
     StatefulShellRoute.indexedStack(
       builder: (BuildContext context, GoRouterState state,
           StatefulNavigationShell navigationShell) {
