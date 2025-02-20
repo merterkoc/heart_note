@@ -28,12 +28,11 @@ class GeminiService {
 
   final imagenModel = GenerativeModel(
     model: 'imagen-3.0-generate-002',
-    apiKey: 'AIzaSyADRAipJbD2m3WzCdRPrLW2W_-Xjlmr7wI',
+    apiKey: const String.fromEnvironment('GEMINI_API_KEY'),
   );
 
-// Replicate API anahtarı
   static const _huggingFaceApiKey =
-      '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'; // Hugging Face API anahtarı
+      String.fromEnvironment('HUGGING_FACE_API_KEY');
 
   Future<String> generateMessage(String category, String prompt) async {
     try {
