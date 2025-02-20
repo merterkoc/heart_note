@@ -24,8 +24,39 @@ class _TonePageState extends State<TonePage> {
   String? _tone;
 
   final List<String> _toneOptions = [
-    'Sen',
-    'Siz',
+    // Resmiyet Derecesine Göre
+    'Sen',  // Samimi, yakın arkadaşlar ve aile için
+    'Siz',  // Resmi, saygılı hitap için
+
+    // Duygusal Tonlar
+    'Sevgili',  // Romantik ve özel mesajlar için
+    'Canım',  // Samimi, sıcak bir hitap
+    'Değerli',  // Saygı ve takdir ifade eden hitap
+    'Sayın',  // Resmi, profesyonel mesajlar için
+
+    // Mizahi ve Eğlenceli Tonlar
+    'Hey!',  // Eğlenceli, enerjik bir giriş
+    'Dostum',  // Arkadaşça bir ton
+    'Kanka',  // Samimi ve gündelik bir hitap
+    'Efsane',  // Övgü dolu ve şakacı bir hitap
+
+    // Kişisel Bağlama Göre
+    'Hocam',  // Saygılı ama samimi bir hitap
+    'Patron',  // Şaka veya ciddi bir hitap
+    'Kral',  // Eğlenceli, takdir edici bir ton
+    'Sultanım',  // Esprili ve sıcak bir ifade
+
+    // Nostaljik ve Özel Hitaplar
+    'Canparem',  // Eski Türkçe ve nostaljik hitap
+    'Gönüldaşım',  // Ruhsal bağları vurgulayan bir hitap
+    'Yoldaş',  // Derin bir dostluğu ifade eder
+
+    // Genel Kullanımlar
+    'Arkadaşım',
+    'Kıymetlim',
+    'Dost',
+    'Biricik',
+    'Güzel İnsan'
   ];
 
   @override

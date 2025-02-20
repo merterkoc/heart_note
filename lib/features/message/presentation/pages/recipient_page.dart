@@ -22,14 +22,58 @@ class _RecipientPageState extends State<RecipientPage> {
   String? _recipient;
 
   final List<String> _recipientOptions = [
+    // Romantik İlişkiler
     'Sevgili',
+    'Eş',
+    'Nişanlı',
+    'Partner',
+    'Hayat Arkadaşı',
+
+    // Aile Bireyleri
+    'Anne',
+    'Baba',
+    'Kardeş',
+    'Ağabey',
+    'Abla',
+    'Kuzen',
+    'Dede',
+    'Nine',
+    'Amca',
+    'Teyze',
+    'Dayı',
+    'Hala',
+
+    // Arkadaşlık ve Sosyal Çevre
     'En İyi Arkadaş',
     'Dost',
-    'Kardeş',
-    'Aile',
-    'Diğer',
-  ];
+    'Çocukluk Arkadaşı',
+    'İş Arkadaşı',
+    'Sırdaş',
+    'Komşu',
+    'Üniversite Arkadaşı',
 
+    // İş ve Resmi İlişkiler
+    'Patron',
+    'Çalışan',
+    'Müşteri',
+    'Öğretmen',
+    'Öğrenci',
+    'Danışman',
+
+    // Özel Gruplar
+    'Aile',
+    'Ekip Arkadaşı',
+    'Topluluk Üyesi',
+    'Spor Takımı Arkadaşı',
+
+    // Genel Kullanımlar
+    'Değerli Birisi',
+    'Hayran',
+    'Destekçim',
+    'Yoldaş',
+    'Kahramanım',
+    'Diğer'
+  ];
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
