@@ -16,7 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/message_history.dart';
 import '../bloc/history_bloc.dart';
 
-class MessageResultPage extends StatelessWidget {
+class MessageResultPage extends StatefulWidget {
   final MessageCategory category;
   final List<String> selectedKeywords;
   final String recipient;
@@ -29,6 +29,24 @@ class MessageResultPage extends StatelessWidget {
     required this.recipient,
     required this.tone,
   });
+
+  @override
+  State<MessageResultPage> createState() => _MessageResultPageState();
+}
+
+class _MessageResultPageState extends State<MessageResultPage> {
+  bool _autoSave = false;
+
+  @override
+  void initState() {
+    _loadAutoSavePreference();
+    super.initState();
+  }
+
+  Future<void> _loadAutoSavePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    _autoSave = prefs.getBool('autoSave') ?? false;
+  }
 
   void _showAlert(BuildContext context, String message) {
     showCupertinoModalPopup<void>(
@@ -52,10 +70,10 @@ class MessageResultPage extends StatelessWidget {
         geminiService: GeminiService(),
       )..add(
           GenerateMessage(
-            category: category.title,
-            imagePrompt: category.imagePrompt,
+            category: widget.category.title,
+            imagePrompt: widget.category.imagePrompt,
             prompt:
-                'Kime: $recipient, Hitap: $tone, Anahtar kelimeler: ${selectedKeywords.join(", ")}',
+                'Kime: ${widget.recipient}, Hitap: ${widget.tone}, Anahtar kelimeler: ${widget.selectedKeywords.join(", ")}',
           ),
         ),
       child: CupertinoPageScaffold(
@@ -65,39 +83,54 @@ class MessageResultPage extends StatelessWidget {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: BlocBuilder<NoteDetailBloc, NoteDetailState>(
-              builder: (context, state) {
-                if (state is NoteDetailLoading) {
-                  return const Center(
-                    child: CupertinoActivityIndicator(),
+            child: BlocListener<NoteDetailBloc, NoteDetailState>(
+              listenWhen: (previous, current) =>
+                  previous is NoteDetailLoading && current is NoteDetailLoaded,
+              listener: (context, state) {
+                if (state is NoteDetailLoaded && _autoSave) {
+                  _saveToHistory(
+                    context,
+                    state.message,
+                    state.imageUrl,
+                    widget.selectedKeywords,
+                    widget.category,
                   );
                 }
-                if (state is NoteDetailError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          CupertinoIcons.exclamationmark_circle,
-                          size: 48,
-                          color: CupertinoColors.destructiveRed,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          state.message,
-                          style: const TextStyle(
+              },
+              child: BlocBuilder<NoteDetailBloc, NoteDetailState>(
+                builder: (context, state) {
+                  if (state is NoteDetailLoading) {
+                    return const Center(
+                      child: CupertinoActivityIndicator(),
+                    );
+                  }
+                  if (state is NoteDetailError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            CupertinoIcons.exclamationmark_circle,
+                            size: 48,
                             color: CupertinoColors.destructiveRed,
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                if (state is NoteDetailLoaded) {
-                  return _buildContent(context, state);
-                }
-                return const SizedBox();
-              },
+                          const SizedBox(height: 16),
+                          Text(
+                            state.message,
+                            style: const TextStyle(
+                              color: CupertinoColors.destructiveRed,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  if (state is NoteDetailLoaded) {
+                    return _buildContent(context, state);
+                  }
+                  return const SizedBox();
+                },
+              ),
             ),
           ),
         ),
@@ -135,7 +168,7 @@ class MessageResultPage extends StatelessWidget {
               const SizedBox(height: 16),
               Wrap(
                 spacing: 8.0,
-                children: selectedKeywords.map((keyword) {
+                children: widget.selectedKeywords.map((keyword) {
                   return Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -200,8 +233,8 @@ class MessageResultPage extends StatelessWidget {
                         context,
                         state.message,
                         state.imageUrl,
-                        selectedKeywords,
-                        category,
+                        widget.selectedKeywords,
+                        widget.category,
                       ),
                       child: const Icon(CupertinoIcons.floppy_disk),
                     ),
