@@ -225,6 +225,8 @@ class MessageResultPage extends StatelessWidget {
       await Share.shareXFiles(
         [XFile(imagePath.path)],
         text: message,
+        subject: message,
+        sharePositionOrigin: const Rect.fromLTRB(10, 10, 2.5, 2.5),
       );
     } else {
       Share.share(message);
