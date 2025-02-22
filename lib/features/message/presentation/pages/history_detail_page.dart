@@ -49,7 +49,7 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
       try {
         final bytes = base64Decode(imageBase64);
         final tempDir = await getTemporaryDirectory();
-        final imagePath = '${tempDir.path}/shared_image.png';
+        final imagePath = '${tempDir.path}/shared_imaage.png';
         final imageFile = File(imagePath);
         await imageFile.writeAsBytes(bytes);
         files.add(XFile(imagePath));
@@ -57,7 +57,18 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
         print('Görsel paylaşma hatası: $e');
       }
     }
-    await Share.shareXFiles(files, text: message);
+    if (files.isEmpty) {
+      await Share.share(
+        message,
+        sharePositionOrigin: const Rect.fromLTRB(10, 10, 2.5, 2.5),
+      );
+    } else {
+      await Share.shareXFiles(
+        files,
+        text: message,
+        sharePositionOrigin: const Rect.fromLTRB(10, 10, 2.5, 2.5),
+      );
+    }
   }
 
   Future<void> _updateMessage() async {
