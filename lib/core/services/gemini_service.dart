@@ -4,7 +4,7 @@ import 'dart:convert';
 
 class GeminiService {
   final model = GenerativeModel(
-    model: 'gemini-pro',
+    model: 'gemini-2.0-flash',
     apiKey: 'AIzaSyADRAipJbD2m3WzCdRPrLW2W_-Xjlmr7wI',
     safetySettings: [
       SafetySetting(

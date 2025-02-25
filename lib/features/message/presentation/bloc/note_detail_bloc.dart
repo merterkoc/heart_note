@@ -23,6 +23,7 @@ class NoteDetailBloc extends Bloc<NoteDetailEvent, NoteDetailState> {
       emit(NoteDetailLoaded(message: message!, imageUrl: imageUrl));
     } catch (e) {
       emit(NoteDetailError(e.toString()));
+      rethrow;
     }
   }
 }
