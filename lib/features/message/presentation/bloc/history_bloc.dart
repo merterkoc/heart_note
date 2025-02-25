@@ -24,7 +24,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
       final historyJson = prefs.getStringList('message_history') ?? [];
       final history = historyJson
           .map((e) => MessageHistory.fromJson(jsonDecode(e)))
-          .toList();
+          .toList().reversed.toList();
       emit(HistoryLoaded(history));
     } catch (e) {
       emit(HistoryError(e.toString()));

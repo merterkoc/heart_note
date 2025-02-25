@@ -7,7 +7,6 @@ import 'package:heart_note/features/message/presentation/bloc/history_event.dart
 import 'package:heart_note/features/message/presentation/bloc/history_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../../domain/models/message_history.dart';
 import './history_detail_page.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -100,208 +99,228 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Geçmiş'),
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Geçmiş'),
       ),
       child: BlocBuilder<HistoryBloc, HistoryState>(
         builder: (context, state) {
-          return SafeArea(
-            child: state is HistoryLoading
-                ? const Center(child: CupertinoActivityIndicator())
-                : state is HistoryLoaded
-                    ? state.history.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  CupertinoIcons.clock,
-                                  size: 64,
-                                  color: CupertinoColors.systemGrey,
-                                ),
-                                const SizedBox(height: 16),
-                                DefaultTextStyle(
-                                  style: CupertinoTheme.of(context)
-                                      .textTheme
-                                      .navTitleTextStyle,
-                                  child:
-                                      const Text('Henüz kaydedilmiş mesaj yok'),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            reverse: true,
-                            itemCount: state.history.length +
-                                (state.history.length ~/ 5),
-                            // Reklamları hesaba kat
-                            itemBuilder: (context, index) {
-                              if (_isBannerAdReady &&
-                                  (index > 0 && index % 5 == 0)) {
-                                return SizedBox(
-                                  width: _bannerAd!.size.width.toDouble(),
-                                  height: _bannerAd!.size.height.toDouble(),
-                                  child: AdWidget(ad: _bannerAd!),
-                                );
-                              } else if (index > 0 && index % 5 == 0) {
-                                return SizedBox(
-                                  width: _bannerAd!.size.width.toDouble(),
-                                  height: _bannerAd!.size.height.toDouble(),
-                                );
-                              }
-                              final itemIndex = index - (index ~/ 5);
-                              final item = state.history[itemIndex];
-
-                              return Dismissible(
-                                key: Key(item.createdAt.toString()),
-                                direction: DismissDirection.endToStart,
-                                background: Container(
-                                  color: CupertinoColors.destructiveRed,
-                                  alignment: Alignment.centerRight,
-                                  padding: const EdgeInsets.only(right: 16),
-                                  child: const Icon(
-                                    CupertinoIcons.delete,
-                                    color: CupertinoColors.white,
+          return Column(
+            children: [
+              if (_isBannerAdReady)
+                SizedBox(
+                  width: _bannerAd!.size.width.toDouble(),
+                  height: _bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd!),
+                ),
+              Expanded(
+                child: SafeArea(
+                  child: state is HistoryLoading
+                      ? const Center(child: CupertinoActivityIndicator())
+                      : state is HistoryLoaded
+                          ? state.history.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        CupertinoIcons.clock,
+                                        size: 64,
+                                        color: CupertinoColors.systemGrey,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      DefaultTextStyle(
+                                        style: CupertinoTheme.of(context)
+                                            .textTheme
+                                            .navTitleTextStyle,
+                                        child: const Text(
+                                            'Henüz kaydedilmiş mesaj yok'),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                confirmDismiss: (direction) async {
-                                  _showDeleteConfirmation(context, itemIndex);
-                                  return false;
-                                },
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      CupertinoPageRoute(
-                                        builder: (context) => HistoryDetailPage(
-                                          message: item,
-                                          index: itemIndex,
+                                )
+                              : ListView.builder(
+                                  itemCount: state.history.length,
+                                  // Reklamları hesaba kat
+                                  itemBuilder: (context, index) {
+                                    final itemIndex = index;
+                                    final item = state.history[itemIndex];
+
+                                    return Dismissible(
+                                      key: Key(item.createdAt.toString()),
+                                      direction: DismissDirection.endToStart,
+                                      background: Container(
+                                        color: CupertinoColors.destructiveRed,
+                                        alignment: Alignment.centerRight,
+                                        padding:
+                                            const EdgeInsets.only(right: 16),
+                                        child: const Icon(
+                                          CupertinoIcons.delete,
+                                          color: CupertinoColors.white,
+                                        ),
+                                      ),
+                                      confirmDismiss: (direction) async {
+                                        _showDeleteConfirmation(
+                                            context, itemIndex);
+                                        return false;
+                                      },
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            CupertinoPageRoute(
+                                              builder: (context) =>
+                                                  HistoryDetailPage(
+                                                message: item,
+                                                index: itemIndex,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          margin: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
+                                                color: CupertinoColors
+                                                    .systemGrey4),
+                                          ),
+                                          child: IntrinsicHeight(
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
+                                              children: [
+                                                if (item.imageUrl != null)
+                                                  ClipRRect(
+                                                    borderRadius:
+                                                        const BorderRadius
+                                                            .horizontal(
+                                                            left:
+                                                                Radius.circular(
+                                                                    12)),
+                                                    child: SizedBox(
+                                                      width: 120,
+                                                      child: Image.memory(
+                                                        base64Decode(
+                                                            item.imageUrl!),
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder: (context,
+                                                            error, stackTrace) {
+                                                          return const Center(
+                                                            child: Icon(
+                                                              CupertinoIcons
+                                                                  .photo_fill_on_rectangle_fill,
+                                                              size: 48,
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+                                                Expanded(
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            16),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            DefaultTextStyle(
+                                                              style: CupertinoTheme
+                                                                      .of(context)
+                                                                  .textTheme
+                                                                  .navTitleTextStyle,
+                                                              child: Text(item
+                                                                  .category),
+                                                            ),
+                                                            const Spacer(),
+                                                            DefaultTextStyle(
+                                                              style: CupertinoTheme
+                                                                      .of(context)
+                                                                  .textTheme
+                                                                  .tabLabelTextStyle,
+                                                              child: Text(
+                                                                  _formatDate(item
+                                                                      .createdAt)),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 8),
+                                                        DefaultTextStyle(
+                                                          style:
+                                                              CupertinoTheme.of(
+                                                                      context)
+                                                                  .textTheme
+                                                                  .textStyle,
+                                                          child: Text(
+                                                            item.message,
+                                                            maxLines: 2,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 8),
+                                                        Wrap(
+                                                          spacing: 8,
+                                                          children: item
+                                                              .keywords
+                                                              .map((keyword) {
+                                                            return Container(
+                                                              margin:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      bottom:
+                                                                          4),
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                horizontal: 8,
+                                                                vertical: 4,
+                                                              ),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: CupertinoColors
+                                                                    .systemGrey6,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8),
+                                                              ),
+                                                              child:
+                                                                  DefaultTextStyle(
+                                                                style: CupertinoTheme.of(
+                                                                        context)
+                                                                    .textTheme
+                                                                    .tabLabelTextStyle,
+                                                                child: Text(
+                                                                    keyword),
+                                                              ),
+                                                            );
+                                                          }).toList(),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     );
                                   },
-                                  child: Container(
-                                    margin: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                          color: CupertinoColors.systemGrey4),
-                                    ),
-                                    child: IntrinsicHeight(
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          if (item.imageUrl != null)
-                                            ClipRRect(
-                                              borderRadius:
-                                                  const BorderRadius.horizontal(
-                                                      left:
-                                                          Radius.circular(12)),
-                                              child: SizedBox(
-                                                width: 120,
-                                                child: Image.memory(
-                                                  base64Decode(item.imageUrl!),
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error,
-                                                      stackTrace) {
-                                                    return const Center(
-                                                      child: Icon(
-                                                        CupertinoIcons
-                                                            .photo_fill_on_rectangle_fill,
-                                                        size: 48,
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(16),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      DefaultTextStyle(
-                                                        style: CupertinoTheme
-                                                                .of(context)
-                                                            .textTheme
-                                                            .navTitleTextStyle,
-                                                        child:
-                                                            Text(item.category),
-                                                      ),
-                                                      const Spacer(),
-                                                      DefaultTextStyle(
-                                                        style: CupertinoTheme
-                                                                .of(context)
-                                                            .textTheme
-                                                            .tabLabelTextStyle,
-                                                        child: Text(_formatDate(
-                                                            item.createdAt)),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 8),
-                                                  DefaultTextStyle(
-                                                    style: CupertinoTheme.of(
-                                                            context)
-                                                        .textTheme
-                                                        .textStyle,
-                                                    child: Text(
-                                                      item.message,
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 8),
-                                                  Wrap(
-                                                    spacing: 8,
-                                                    children: item.keywords
-                                                        .map((keyword) {
-                                                      return Container(
-                                                        margin: const EdgeInsets
-                                                            .only(bottom: 4),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 4,
-                                                        ),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: CupertinoColors
-                                                              .systemGrey6,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(8),
-                                                        ),
-                                                        child: DefaultTextStyle(
-                                                          style: CupertinoTheme
-                                                                  .of(context)
-                                                              .textTheme
-                                                              .tabLabelTextStyle,
-                                                          child: Text(keyword),
-                                                        ),
-                                                      );
-                                                    }).toList(),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                    : const SizedBox(),
+                                )
+                          : const SizedBox(),
+                ),
+              ),
+            ],
           );
         },
       ),
