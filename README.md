@@ -61,3 +61,19 @@ Heart Note, kullanıcıların duygusal ve kişisel notlar oluşturmasına yardı
 -   `lottie`: Lottie animasyonları için
 
 ## Proje Yapısı
+
+```bash
+flutter clean
+rm -Rf ios/Pods
+rm -Rf ios/.symlinks
+rm -Rf ios/Flutter/Flutter.framework
+rm -Rf ios/Flutter/Flutter.podspec
+rm -Rf ios/Podfile.lock
+pod cache clean --all
+flutter pub get
+flutter pub run build_runner build --delete-conflicting-outputs
+cd ios
+arch -x86_64 pod install
+cd ..
+flutter build ios --release --flavor dev
+```

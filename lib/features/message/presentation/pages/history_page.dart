@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:heart_note/core/utils/ad_helper.dart';
 import 'package:heart_note/features/message/presentation/bloc/history_bloc.dart';
 import 'package:heart_note/features/message/presentation/bloc/history_event.dart';
 import 'package:heart_note/features/message/presentation/bloc/history_state.dart';
@@ -16,6 +18,17 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  final AdHelper _adHelper = AdHelper.create();
+  BannerAd? _bannerAd;
+
+  bool _isBannerAdReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerAd();
+  }
+
   Future<void> _deleteHistoryItem(int index) async {
     final prefs = await SharedPreferences.getInstance();
     final historyJson = prefs.getStringList('message_history') ?? [];
@@ -23,6 +36,35 @@ class _HistoryPageState extends State<HistoryPage> {
     await prefs.setStringList('message_history', historyJson);
 
     context.read<HistoryBloc>().add(LoadHistory());
+  }
+
+  void _loadBannerAd() {
+    final adUnitId = _adHelper.getAdUnitId(AdType.banner);
+    if (adUnitId == null) {
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          print('$BannerAd loaded.');
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          print('$BannerAd failedToLoad: $error');
+          ad.dispose();
+        },
+        onAdOpened: (Ad ad) => print('$BannerAd opened.'),
+        onAdClosed: (Ad ad) => print('$BannerAd closed.'),
+      ),
+    );
+
+    _bannerAd!.load();
   }
 
   void _showDeleteConfirmation(BuildContext context, int index) {
@@ -89,9 +131,27 @@ class _HistoryPageState extends State<HistoryPage> {
                             ),
                           )
                         : ListView.builder(
-                            itemCount: state.history.length,
+                            reverse: true,
+                            itemCount: state.history.length +
+                                (state.history.length ~/ 5),
+                            // Reklamları hesaba kat
                             itemBuilder: (context, index) {
-                              final item = state.history[index];
+                              if (_isBannerAdReady &&
+                                  (index > 0 && index % 5 == 0)) {
+                                return SizedBox(
+                                  width: _bannerAd!.size.width.toDouble(),
+                                  height: _bannerAd!.size.height.toDouble(),
+                                  child: AdWidget(ad: _bannerAd!),
+                                );
+                              } else if (index > 0 && index % 5 == 0) {
+                                return SizedBox(
+                                  width: _bannerAd!.size.width.toDouble(),
+                                  height: _bannerAd!.size.height.toDouble(),
+                                );
+                              }
+                              final itemIndex = index - (index ~/ 5);
+                              final item = state.history[itemIndex];
+
                               return Dismissible(
                                 key: Key(item.createdAt.toString()),
                                 direction: DismissDirection.endToStart,
@@ -105,7 +165,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                   ),
                                 ),
                                 confirmDismiss: (direction) async {
-                                  _showDeleteConfirmation(context, index);
+                                  _showDeleteConfirmation(context, itemIndex);
                                   return false;
                                 },
                                 child: GestureDetector(
@@ -115,7 +175,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                       CupertinoPageRoute(
                                         builder: (context) => HistoryDetailPage(
                                           message: item,
-                                          index: index,
+                                          index: itemIndex,
                                         ),
                                       ),
                                     );
@@ -223,8 +283,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                                           style: CupertinoTheme
                                                                   .of(context)
                                                               .textTheme
-                                                              .tabLabelTextStyle
-                                                              .copyWith(),
+                                                              .tabLabelTextStyle,
                                                           child: Text(keyword),
                                                         ),
                                                       );

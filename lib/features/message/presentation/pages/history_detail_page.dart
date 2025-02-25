@@ -198,8 +198,8 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
                     isDisabled: true,
                     keywords: List<MessageKeyword>.generate(
                         widget.message.keywords.length,
-                        (index) => const MessageKeyword(
-                            isSelected: false, text: 'Test')),
+                        (index) => MessageKeyword(
+                            isSelected: false, text: widget.message.keywords[index])),
                     onKeywordsSelected: (keywords) {},
                   ),
                   const SizedBox(height: 16),

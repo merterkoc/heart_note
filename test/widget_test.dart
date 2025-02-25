@@ -5,17 +5,20 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:heart_note/app.dart';
 
-import 'package:heart_note/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester
-        .pumpWidget(MyApp(prefs: await SharedPreferences.getInstance()));
+    await tester.pumpWidget(HeartNoteApp(
+      prefs: await SharedPreferences.getInstance(),
+      analytics: FirebaseAnalytics.instance,
+    ));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

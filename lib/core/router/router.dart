@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:heart_note/core/entities/message_keyword.dart';
 import 'package:heart_note/core/router/nav_bar.dart';
+import 'package:heart_note/main.dart';
 import '../../features/message/presentation/pages/home_page.dart';
 import '../../features/message/presentation/pages/note_detail_page.dart';
 import '../../features/message/presentation/pages/message_result_page.dart';
@@ -74,7 +74,7 @@ final router = GoRouter(
   initialLocation: '/',
   debugLogDiagnostics: true,
   // Built-in logging
-  observers: [GoRouterObserver()],
+  observers: [GoRouterObserver(), observer],
   // Custom detailed logging
   redirect: (context, state) async {
     final prefs = await SharedPreferences.getInstance();

@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heart_note/features/message/presentation/bloc/history_event.dart';
-import 'package:heart_note/features/message/presentation/widgets/keyword_selector.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -62,7 +61,7 @@ class _MessageResultPageState extends State<MessageResultPage> {
 
     _bannerAd = BannerAd(
       adUnitId: adUnitId,
-      request: AdRequest(),
+      request: const AdRequest(),
       size: AdSize.banner,
       listener: BannerAdListener(
         onAdLoaded: (Ad ad) {
@@ -171,6 +170,7 @@ class _MessageResultPageState extends State<MessageResultPage> {
                       alignment: Alignment.bottomCenter,
                       children: [
                         Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (state.imageUrl != null)
                               Container(
@@ -224,14 +224,60 @@ class _MessageResultPageState extends State<MessageResultPage> {
                                 );
                               }).toList(),
                             ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            if (_isBannerAdReady)
+                              SizedBox(
+                                width: _bannerAd!.size.width.toDouble(),
+                                height: _bannerAd!.size.height.toDouble(),
+                                child: AdWidget(ad: _bannerAd!),
+                              ),
+                            const Spacer(),
+                            Container(
+                              child: SafeArea(
+                                top: false,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    CupertinoButton(
+                                      onPressed: () {
+                                        _shareContent(
+                                          state.message,
+                                          state.imageUrl,
+                                        );
+                                      },
+                                      child: const Icon(CupertinoIcons.share),
+                                    ),
+                                    CupertinoButton(
+                                      onPressed: () {
+                                        Clipboard.setData(
+                                          ClipboardData(text: state.message),
+                                        );
+                                        _showAlert(
+                                            context, 'Mesaj kopyalandı!');
+                                      },
+                                      child:
+                                          const Icon(CupertinoIcons.doc_on_doc),
+                                    ),
+                                    CupertinoButton(
+                                      onPressed: () => _saveToHistory(
+                                        context,
+                                        state.message,
+                                        state.imageUrl,
+                                        widget.selectedKeywords,
+                                        widget.category,
+                                      ),
+                                      child: const Icon(
+                                          CupertinoIcons.floppy_disk),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                        if (_isBannerAdReady)
-                          SizedBox(
-                            width: _bannerAd!.size.width.toDouble(),
-                            height: _bannerAd!.size.height.toDouble(),
-                            child: AdWidget(ad: _bannerAd!),
-                          ),
                       ],
                     );
                   }
