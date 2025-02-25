@@ -12,10 +12,12 @@ import 'core/bloc/theme_bloc.dart';
 import 'core/bloc/theme_event.dart';
 import 'core/bloc/theme_state.dart';
 import 'features/message/presentation/bloc/history_bloc.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
+  MobileAds.instance.initialize();
   runApp(MyApp(prefs: prefs));
 }
 

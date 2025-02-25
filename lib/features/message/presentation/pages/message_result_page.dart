@@ -15,6 +15,8 @@ import '../../../../core/services/gemini_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/message_history.dart';
 import '../bloc/history_bloc.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../../../../core/utils/ad_helper.dart';
 
 class MessageResultPage extends StatefulWidget {
   final MessageCategory category;
@@ -36,16 +38,55 @@ class MessageResultPage extends StatefulWidget {
 
 class _MessageResultPageState extends State<MessageResultPage> {
   bool _autoSave = false;
+  BannerAd? _bannerAd;
+  bool _isBannerAdReady = false;
+  final AdHelper _adHelper = AdHelper.create();
 
   @override
   void initState() {
     _loadAutoSavePreference();
     super.initState();
+    _loadBannerAd();
   }
 
   Future<void> _loadAutoSavePreference() async {
     final prefs = await SharedPreferences.getInstance();
     _autoSave = prefs.getBool('autoSave') ?? false;
+  }
+
+  void _loadBannerAd() {
+    final adUnitId = _adHelper.getAdUnitId(AdType.banner);
+    if (adUnitId == null) {
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: adUnitId,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          print('$BannerAd loaded.');
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          print('$BannerAd failedToLoad: $error');
+          ad.dispose();
+        },
+        onAdOpened: (Ad ad) => print('$BannerAd opened.'),
+        onAdClosed: (Ad ad) => print('$BannerAd closed.'),
+      ),
+    );
+
+    _bannerAd!.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
   }
 
   void _showAlert(BuildContext context, String message) {
@@ -126,7 +167,73 @@ class _MessageResultPageState extends State<MessageResultPage> {
                     );
                   }
                   if (state is NoteDetailLoaded) {
-                    return _buildContent(context, state);
+                    return Stack(
+                      alignment: Alignment.bottomCenter,
+                      children: [
+                        Column(
+                          children: [
+                            if (state.imageUrl != null)
+                              Container(
+                                height: 200,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  image: DecorationImage(
+                                    image: MemoryImage(
+                                      base64Decode(state.imageUrl!),
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 16),
+                            Text(
+                              state.message,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 16),
+                            Wrap(
+                              spacing: 8.0,
+                              children: widget.selectedKeywords.map((keyword) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: CupertinoColors.systemGrey6,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: CupertinoColors.systemGrey4,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      DefaultTextStyle(
+                                        style: CupertinoTheme.of(context)
+                                            .textTheme
+                                            .textStyle
+                                            .copyWith(
+                                              color: CupertinoColors.label,
+                                            ),
+                                        child: Text(keyword),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                        if (_isBannerAdReady)
+                          SizedBox(
+                            width: _bannerAd!.size.width.toDouble(),
+                            height: _bannerAd!.size.height.toDouble(),
+                            child: AdWidget(ad: _bannerAd!),
+                          ),
+                      ],
+                    );
                   }
                   return const SizedBox();
                 },
@@ -134,116 +241,6 @@ class _MessageResultPageState extends State<MessageResultPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildContent(BuildContext context, NoteDetailLoaded state) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (state.imageUrl != null)
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    image: DecorationImage(
-                      image: MemoryImage(
-                        base64Decode(state.imageUrl!),
-                      ),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 16),
-              Text(
-                state.message,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 8.0,
-                children: widget.selectedKeywords.map((keyword) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: CupertinoColors.systemGrey6,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: CupertinoColors.systemGrey4,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DefaultTextStyle(
-                          style: CupertinoTheme.of(context)
-                              .textTheme
-                              .textStyle
-                              .copyWith(
-                                color: CupertinoColors.label,
-                              ),
-                          child: Text(keyword),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              child: SafeArea(
-                top: false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    CupertinoButton(
-                      onPressed: () {
-                        _shareContent(
-                          state.message,
-                          state.imageUrl,
-                        );
-                      },
-                      child: const Icon(CupertinoIcons.share),
-                    ),
-                    CupertinoButton(
-                      onPressed: () {
-                        Clipboard.setData(
-                          ClipboardData(text: state.message),
-                        );
-                        _showAlert(context, 'Mesaj kopyalandı!');
-                      },
-                      child: const Icon(CupertinoIcons.doc_on_doc),
-                    ),
-                    CupertinoButton(
-                      onPressed: () => _saveToHistory(
-                        context,
-                        state.message,
-                        state.imageUrl,
-                        widget.selectedKeywords,
-                        widget.category,
-                      ),
-                      child: const Icon(CupertinoIcons.floppy_disk),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
