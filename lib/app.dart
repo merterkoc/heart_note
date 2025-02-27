@@ -45,6 +45,11 @@ class HeartNoteApp extends StatelessWidget {
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, state) {
           return CupertinoApp.router(
+            localizationsDelegates: const [
+              DefaultMaterialLocalizations.delegate,
+              DefaultCupertinoLocalizations.delegate,
+              DefaultWidgetsLocalizations.delegate,
+            ],
             title: 'Heart Note',
             theme: state.themeMode == ThemeMode.light
                 ? AppTheme.cupertinoLightTheme

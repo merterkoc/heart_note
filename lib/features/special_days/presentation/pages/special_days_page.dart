@@ -112,55 +112,75 @@ class _SpecialDaysPageState extends State<SpecialDaysPage> {
     String title = '';
     DateTime selectedDate = DateTime.now();
 
-    showCupertinoDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
+      isScrollControlled: true, // Modalın tam açılmasını önler
+      builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            return CupertinoAlertDialog(
-              title: const Text('Özel Gün Ekle'),
-              content: Column(
-                children: [
-                  CupertinoTextField(
-                    placeholder: 'Başlık',
-                    onChanged: (value) {
-                      title = value;
-                    },
-                  ),
-                  SizedBox(
-                    height: 200,
-                    child: CupertinoDatePicker(
-                      mode: CupertinoDatePickerMode.date,
-                      initialDateTime: selectedDate,
-                      onDateTimeChanged: (DateTime newDate) {
-                        setState(() {
-                          selectedDate = newDate;
-                        });
-                      },
-                    ),
-                  ),
-                ],
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(10),
               ),
-              actions: [
-                CupertinoDialogAction(
-                  child: const Text('İptal'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          CupertinoButton(
+                            child: const Text('İptal'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          CupertinoButton(
+                            child: const Text('Ekle'),
+                            onPressed: () {
+                              if (title.isNotEmpty) {
+                                final specialDay = SpecialDay(
+                                    title: title, date: selectedDate);
+                                BlocProvider.of<SpecialDayBloc>(context)
+                                    .add(AddSpecialDay(specialDay));
+                                Navigator.of(context).pop();
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: CupertinoTextField(
+                          placeholder: 'Başlık',
+                          onChanged: (value) {
+                            title = value;
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        height: 200,
+                        child: CupertinoDatePicker(
+                          mode: CupertinoDatePickerMode.date,
+                          initialDateTime: selectedDate,
+                          onDateTimeChanged: (DateTime newDate) {
+                            setState(() {
+                              selectedDate = newDate;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                CupertinoDialogAction(
-                  child: const Text('Ekle'),
-                  onPressed: () {
-                    if (title.isNotEmpty) {
-                      final specialDay =
-                          SpecialDay(title: title, date: selectedDate);
-                      BlocProvider.of<SpecialDayBloc>(context)
-                          .add(AddSpecialDay(specialDay));
-                      Navigator.of(context).pop();
-                    }
-                  },
-                ),
-              ],
+              ),
             );
           },
         );
@@ -216,14 +236,14 @@ class _SpecialDaysPageState extends State<SpecialDaysPage> {
                                     overflow: TextOverflow.ellipsis,
                                     softWrap: true,
                                   ),
-                                  if (specialDay.date != null)
-                                    Text(
-                                      DateFormat("EEE, MMM d" ).format(specialDay.date),
-                                      textAlign: TextAlign.start,
-                                      overflow: TextOverflow.ellipsis,
-                                      softWrap: true,
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
+                                  Text(
+                                    DateFormat("EEE, MMM d")
+                                        .format(specialDay.date),
+                                    textAlign: TextAlign.start,
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: true,
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
                                 ],
                               ),
                             ),
