@@ -46,6 +46,7 @@ class SpecialDayBloc extends Bloc<SpecialDayEvent, SpecialDayState> {
     Emitter<SpecialDayState> emit,
   ) async {
     try {
+      emit(state.copyWith(isLoading: true, errorMessage: null));
       final prefs = await SharedPreferences.getInstance();
       final specialDaysJson = prefs.getStringList('special_days') ?? [];
       final specialDay = event.specialDay;
@@ -53,9 +54,9 @@ class SpecialDayBloc extends Bloc<SpecialDayEvent, SpecialDayState> {
       await prefs.setStringList('special_days', specialDaysJson);
       List<SpecialDay> updatedList = List.from(state.specialDays)
         ..add(specialDay);
-      emit(state.copyWith(specialDays: updatedList));
+      emit(state.copyWith(specialDays: updatedList, isLoading: false));
     } catch (e) {
-      emit(state.copyWith(errorMessage: e.toString()));
+      emit(state.copyWith(errorMessage: e.toString(), isLoading: false));
     }
   }
 
@@ -64,15 +65,18 @@ class SpecialDayBloc extends Bloc<SpecialDayEvent, SpecialDayState> {
     Emitter<SpecialDayState> emit,
   ) async {
     try {
+      emit(state.copyWith(isLoading: true, errorMessage: null));
       final prefs = await SharedPreferences.getInstance();
       final specialDaysJson = prefs.getStringList('special_days') ?? [];
       specialDaysJson.removeAt(event.index);
       await prefs.setStringList('special_days', specialDaysJson);
       final updatedList = List<SpecialDay>.from(state.specialDays)
         ..removeAt(event.index);
-      emit(state.copyWith(specialDays: updatedList));
+      emit(state.copyWith(specialDays: updatedList, isLoading: false));
     } catch (e) {
-      emit(state.copyWith(errorMessage: e.toString()));
+      emit(state.copyWith(
+          isLoading: false,
+          errorMessage: e.toString()));
     }
   }
 
@@ -80,7 +84,7 @@ class SpecialDayBloc extends Bloc<SpecialDayEvent, SpecialDayState> {
     ImportSpecialDays event,
     Emitter<SpecialDayState> emit,
   ) async {
-    emit(state.copyWith(errorMessage: null));
+    emit(state.copyWith(errorMessage: null, isLoading: true));
     try {
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
       if (permissionsGranted.isSuccess && !permissionsGranted.data!) {
