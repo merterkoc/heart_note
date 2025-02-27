@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+        <key>NSCalendarsFullAccessUsageDescription</key>
+        <string>Access most functions for calendar viewing and editing.</string>
+        <key>NSCalendarsUsageDescription</key>
+        <string>Access most functions for calendar viewing and editing.</string>
+
+        <key>NSContactsUsageDescription</key>
+        <string>Access contacts for event attendee editing.</string>
+
 	    <key>GADApplicationIdentifier</key>
         <string>ca-app-pub-2747764241967996~8988102725</string>
         <key>SKAdNetworkItems</key>

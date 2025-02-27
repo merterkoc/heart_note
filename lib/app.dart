@@ -12,6 +12,8 @@ import 'package:heart_note/features/message/presentation/bloc/history_bloc.dart'
 import 'package:heart_note/features/message/presentation/bloc/history_event.dart';
 import 'package:heart_note/features/message/presentation/bloc/message_bloc.dart';
 import 'package:heart_note/features/message/presentation/bloc/message_event.dart';
+import 'package:heart_note/features/special_days/bloc/special_day_bloc.dart';
+import 'package:heart_note/features/special_days/bloc/special_day_event.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HeartNoteApp extends StatelessWidget {
@@ -32,6 +34,9 @@ class HeartNoteApp extends StatelessWidget {
           create: (context) => MessageBloc(
             repository: MessageRepository(),
           )..add(LoadCategories()),
+        ),
+        BlocProvider(
+          create: (context) => SpecialDayBloc()..add(LoadSpecialDays()),
         ),
         BlocProvider(
           create: (context) => HistoryBloc()..add(LoadHistory()),
