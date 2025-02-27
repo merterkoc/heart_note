@@ -15,6 +15,7 @@ import '../../features/message/presentation/pages/recipient_page.dart';
 import '../../features/message/presentation/pages/tone_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
+import '../../features/special_days/presentation/pages/special_days_page.dart';
 
 // Define route names as enums
 enum AppRoute {
@@ -27,7 +28,8 @@ enum AppRoute {
   recipient('/recipient', 'recipient'),
   tone('/tone', 'tone'),
   messageResult('/messageResult', 'messageResult'),
-  onboarding('/onboarding', 'onboarding');
+  onboarding('/onboarding', 'onboarding'),
+  specialDays('/specialDays', 'specialDays');
 
   const AppRoute(this.path, this.name);
 
@@ -96,17 +98,17 @@ final router = GoRouter(
           StatefulNavigationShell navigationShell) {
         return ScaffoldWithNavBar(navigationShell: navigationShell);
       },
-      branches: <StatefulShellBranch>[
+      branches: [
         StatefulShellBranch(
           routes: <RouteBase>[
             GoRoute(
               path: AppRoute.home.path,
               name: AppRoute.home.name, // Use enum name
               builder: (context, state) => const HomePage(),
-              routes: <RouteBase>[
+              routes: [
                 GoRoute(
                   path: AppRoute.message_result.path,
-                  name: AppRoute.message_result.name, // Use enum name
+                  name: AppRoute.message_result.name,
                   builder: (context, state) {
                     final params = state.extra as Map<String, dynamic>;
                     return MessageResultPage(
@@ -135,6 +137,15 @@ final router = GoRouter(
               path: AppRoute.history.path,
               name: AppRoute.history.name, // Use enum name
               builder: (context, state) => const HistoryPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: AppRoute.specialDays.path,
+              name: AppRoute.specialDays.name, // Use enum name
+              builder: (context, state) => const SpecialDaysPage(),
             ),
           ],
         ),

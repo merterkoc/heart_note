@@ -89,6 +89,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 CupertinoListTile(
                   title: const Text('Mesajları otomatik kaydet'),
                   trailing: CupertinoSwitch(
+                    activeColor: CupertinoColors.destructiveRed,
                     value: _autoSave,
                     onChanged: (bool? value) {
                       if (value != null) {

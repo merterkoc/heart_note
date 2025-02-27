@@ -12,6 +12,8 @@ import 'package:heart_note/features/message/presentation/bloc/history_bloc.dart'
 import 'package:heart_note/features/message/presentation/bloc/history_event.dart';
 import 'package:heart_note/features/message/presentation/bloc/message_bloc.dart';
 import 'package:heart_note/features/message/presentation/bloc/message_event.dart';
+import 'package:heart_note/features/special_days/bloc/special_day_bloc.dart';
+import 'package:heart_note/features/special_days/bloc/special_day_event.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HeartNoteApp extends StatelessWidget {
@@ -34,12 +36,20 @@ class HeartNoteApp extends StatelessWidget {
           )..add(LoadCategories()),
         ),
         BlocProvider(
+          create: (context) => SpecialDayBloc()..add(LoadSpecialDays()),
+        ),
+        BlocProvider(
           create: (context) => HistoryBloc()..add(LoadHistory()),
         ),
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, state) {
           return CupertinoApp.router(
+            localizationsDelegates: const [
+              DefaultMaterialLocalizations.delegate,
+              DefaultCupertinoLocalizations.delegate,
+              DefaultWidgetsLocalizations.delegate,
+            ],
             title: 'Heart Note',
             theme: state.themeMode == ThemeMode.light
                 ? AppTheme.cupertinoLightTheme

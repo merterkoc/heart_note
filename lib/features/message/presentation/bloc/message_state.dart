@@ -6,18 +6,19 @@ abstract class MessageState extends Equatable {
   const MessageState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class MessageLoading extends MessageState {}
 
 class MessageLoaded extends MessageState {
   final List<MessageCategory> categories;
+  final List<MessageCategory>? customEvents;
 
-  const MessageLoaded(this.categories);
+  const MessageLoaded(this.categories, this.customEvents);
 
   @override
-  List<Object> get props => [categories];
+  List<Object?> get props => [categories, customEvents];
 }
 
 class MessageError extends MessageState {

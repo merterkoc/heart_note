@@ -24,6 +24,10 @@ class ScaffoldWithNavBar extends StatelessWidget {
             label: 'Geçmiş',
           ),
           BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.calendar),
+            label: 'Özel Günler',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.settings),
             label: 'Ayarlar',
           ),
