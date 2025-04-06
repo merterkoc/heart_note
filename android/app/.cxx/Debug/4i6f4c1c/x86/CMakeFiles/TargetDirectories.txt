@@ -1,0 +1,2 @@
+C:/Users/esrab/heart_note/android/app/.cxx/Debug/4i6f4c1c/x86/CMakeFiles/edit_cache.dir
+C:/Users/esrab/heart_note/android/app/.cxx/Debug/4i6f4c1c/x86/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "heart_note",
+            "request": "launch",
+            "args": [
+                "--dart-define=GEMINI_API_KEY=AIzaSyADRAipJbD2m3WzCdRPrLW2W_-Xjlmr7wI"
+            ],
+            "type": "dart"
+        },
+        {
+            "name": "heart_note (profile mode)",
+            "request": "launch",
+            "args": [
+                "--dart-define=GEMINI_API_KEY=AIzaSyADRAipJbD2m3WzCdRPrLW2W_-Xjlmr7wI"
+            ],
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "heart_note (release mode)",
+            "request": "launch",
+            "args": [
+                "--dart-define=GEMINI_API_KEY=AIzaSyADRAipJbD2m3WzCdRPrLW2W_-Xjlmr7wI"
+            ],
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}
