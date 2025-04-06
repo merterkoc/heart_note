@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:heart_note/core/utils/ad_helper.dart';
 import 'package:heart_note/features/message/presentation/bloc/history_bloc.dart';
 import 'package:heart_note/features/message/presentation/bloc/history_event.dart';
 import 'package:heart_note/features/message/presentation/bloc/history_state.dart';
@@ -15,8 +17,16 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  final AdHelper _adHelper = AdHelper.create();
+  BannerAd? _bannerAd;
 
+  bool _isBannerAdReady = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerAd();
+  }
 
   Future<void> _deleteHistoryItem(int index) async {
     final prefs = await SharedPreferences.getInstance();
@@ -27,6 +37,34 @@ class _HistoryPageState extends State<HistoryPage> {
     context.read<HistoryBloc>().add(LoadHistory());
   }
 
+  void _loadBannerAd() {
+    final adUnitId = _adHelper.getAdUnitId(AdType.banner);
+    if (adUnitId == null) {
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          print('$BannerAd loaded.');
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          print('$BannerAd failedToLoad: $error');
+          ad.dispose();
+        },
+        onAdOpened: (Ad ad) => print('$BannerAd opened.'),
+        onAdClosed: (Ad ad) => print('$BannerAd closed.'),
+      ),
+    );
+
+    _bannerAd!.load();
+  }
 
   void _showDeleteConfirmation(BuildContext context, int index) {
     showCupertinoModalPopup<void>(
@@ -68,6 +106,12 @@ class _HistoryPageState extends State<HistoryPage> {
         builder: (context, state) {
           return Column(
             children: [
+              if (_isBannerAdReady)
+                SizedBox(
+                  width: _bannerAd!.size.width.toDouble(),
+                  height: _bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd!),
+                ),
               Expanded(
                 child: SafeArea(
                   child: state is HistoryLoading

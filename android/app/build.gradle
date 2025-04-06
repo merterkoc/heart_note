@@ -11,7 +11,7 @@ plugins {
 android {
     namespace = "com.lime.heartnote.heart_note"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion '21.3.6528147'
+    ndkVersion = "27.2.12479018"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
