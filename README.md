@@ -1,5 +1,5 @@
 # Heart Note - Flutter Uygulaması
-
+# flutter build apk --release --dart-define=GEMINI_API_KEY=AIzaSyADRAipJbD2m3WzCdRPrLW2W_-Xjlmr7wI
 ## Proje Açıklaması
 
 Heart Note, kullanıcıların duygusal ve kişisel notlar oluşturmasına yardımcı olan bir Flutter uygulamasıdır. Bu uygulama, yapay zeka (AI) teknolojilerini kullanarak yaratıcı mesajlar oluşturmayı ve kullanıcıların duygusal ifadelerini zenginleştirmeyi amaçlar.
