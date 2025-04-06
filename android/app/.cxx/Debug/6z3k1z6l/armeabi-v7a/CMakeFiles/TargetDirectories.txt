@@ -1,0 +1,2 @@
+/Users/mertyasarerkoc/StudioProjects/heart_note/android/app/.cxx/Debug/6z3k1z6l/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/mertyasarerkoc/StudioProjects/heart_note/android/app/.cxx/Debug/6z3k1z6l/armeabi-v7a/CMakeFiles/rebuild_cache.dir

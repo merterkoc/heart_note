@@ -14,8 +14,6 @@ import '../../../../core/services/gemini_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/message_history.dart';
 import '../bloc/history_bloc.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import '../../../../core/utils/ad_helper.dart';
 
 class MessageResultPage extends StatefulWidget {
   final MessageCategory category;
@@ -37,15 +35,11 @@ class MessageResultPage extends StatefulWidget {
 
 class _MessageResultPageState extends State<MessageResultPage> {
   bool _autoSave = false;
-  BannerAd? _bannerAd;
-  bool _isBannerAdReady = false;
-  final AdHelper _adHelper = AdHelper.create();
 
   @override
   void initState() {
     _loadAutoSavePreference();
     super.initState();
-    _loadBannerAd();
   }
 
   Future<void> _loadAutoSavePreference() async {
@@ -53,40 +47,6 @@ class _MessageResultPageState extends State<MessageResultPage> {
     _autoSave = prefs.getBool('autoSave') ?? false;
   }
 
-  void _loadBannerAd() {
-    final adUnitId = _adHelper.getAdUnitId(AdType.banner);
-    if (adUnitId == null) {
-      return;
-    }
-
-    _bannerAd = BannerAd(
-      adUnitId: adUnitId,
-      request: const AdRequest(),
-      size: AdSize.banner,
-      listener: BannerAdListener(
-        onAdLoaded: (Ad ad) {
-          print('$BannerAd loaded.');
-          setState(() {
-            _isBannerAdReady = true;
-          });
-        },
-        onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          print('$BannerAd failedToLoad: $error');
-          ad.dispose();
-        },
-        onAdOpened: (Ad ad) => print('$BannerAd opened.'),
-        onAdClosed: (Ad ad) => print('$BannerAd closed.'),
-      ),
-    );
-
-    _bannerAd!.load();
-  }
-
-  @override
-  void dispose() {
-    _bannerAd?.dispose();
-    super.dispose();
-  }
 
   void _showAlert(BuildContext context, String message) {
     showCupertinoModalPopup<void>(
@@ -227,12 +187,6 @@ class _MessageResultPageState extends State<MessageResultPage> {
                             const SizedBox(
                               height: 10,
                             ),
-                            if (_isBannerAdReady)
-                              SizedBox(
-                                width: _bannerAd!.size.width.toDouble(),
-                                height: _bannerAd!.size.height.toDouble(),
-                                child: AdWidget(ad: _bannerAd!),
-                              ),
                             const Spacer(),
                             Container(
                               child: SafeArea(
