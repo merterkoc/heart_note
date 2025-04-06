@@ -31,6 +31,8 @@ class GeminiService {
     apiKey: const String.fromEnvironment('GEMINI_API_KEY'),
   );
 
+  static const _huggingFaceApiKey =
+      String.fromEnvironment('HUGGING_FACE_API_KEY');
 
   Future<String> generateMessage(String category, String prompt) async {
     try {
